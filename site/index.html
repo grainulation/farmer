@@ -184,6 +184,11 @@ footer p{margin-bottom:6px}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:0.01ms !important;transition-duration:0.01ms !important}
 }
+*:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+.skip-link{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:1000}
+.skip-link:focus{position:fixed;top:8px;left:8px;width:auto;height:auto;padding:12px 24px;background:var(--accent);color:#000;font-weight:700;font-size:.875rem;border-radius:8px;text-decoration:none;z-index:10000}
+.copy-btn{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+.nav-links a{min-height:44px;display:inline-flex;align-items:center}
 </style>
 </head>
 <body>
@@ -267,7 +272,7 @@ Open this URL on your phone or another tab.</div>
       <span class="key">"command"</span>: <span class="str">"curl ..."</span>
     }]
   }
-}</div>
+}</code></pre>
           <button class="copy-btn" onclick="copyText(this,'See docs for full hook config')">Copy</button>
         </div>
         <div class="qs-output">Hooks intercept tool calls before they
@@ -280,7 +285,7 @@ execute and route them to Farmer.</div>
         <div class="copy-wrap">
           <pre class="qs-code"><code><span class="dim"># Open the URL from step 1</span>
 <span class="dim"># Cards stream in real time</span>
-<span class="dim"># Approve or deny with one tap</span></div>
+<span class="dim"># Approve or deny with one tap</span></code></pre>
         </div>
         <div class="qs-output">Cards appear the instant your agent
 requests a tool call. No polling delay.</div>
