@@ -76,7 +76,7 @@ nav .container{display:flex;align-items:center;justify-content:space-between}
 .nav-cta{background:transparent;border:none;color:var(--text-2);padding:6px;display:flex;align-items:center;transition:color .2s}.nav-cta:hover{color:var(--text);text-decoration:none}
 
 .hero{padding:100px 0 80px;text-align:center}
-.hero-badge{display:inline-block;padding:5px 14px;border:1px solid var(--border-light);border-radius:100px;font-size:.75rem;color:var(--text-2);margin-bottom:24px;letter-spacing:.04em;text-transform:uppercase}
+.hero-badge{display:inline-block;padding:5px 14px;border:1px solid var(--border-light);border-radius:100px;font-size:.75rem;color:var(--text-2);margin-top:20px;margin-bottom:24px;letter-spacing:.04em;text-transform:uppercase}
 .hero h1{font-size:clamp(2.4rem,5.5vw,3.8rem);font-weight:800;letter-spacing:-.035em;line-height:1.1;margin-bottom:20px}
 .hero h1 em{font-style:normal;color:var(--accent)}
 .hero p.hero-sub{font-size:clamp(1.05rem,2vw,1.25rem);color:var(--text-2);max-width:600px;margin:0 auto 40px;line-height:1.55}
@@ -234,7 +234,7 @@ footer p{margin-bottom:6px}
   <div class="container">
     <div class="hero-badge hf hf1"><span style="color:#fff">Part of the </span><strong style="color:#fff"><span style="color:#a78bfa">gr</span>ainulator</strong> ecosystem</div>
     <h1 class="hf hf2">Your AI agent needs<br>permission to run tools.<br><em>You're not at your desk.</em></h1>
-    <p class="hero-sub hf hf3">Farmer is a real-time permission dashboard for Claude Code. When your AI agent wants to run a command, edit a file, or access a resource, you see a card on your phone and tap Approve or Deny. One tap. From anywhere.</p>
+    <p class="hero-sub hf hf3"><strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong> is a real-time permission dashboard for Claude Code. When your AI agent wants to run a command, edit a file, or access a resource, you see a card on your phone and tap Approve or Deny. One tap. From anywhere.</p>
     <div class="hero-actions hf hf4">
       <a href="#quickstart" class="btn btn-primary">
         <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
@@ -252,7 +252,7 @@ footer p{margin-bottom:6px}
     <div class="what-box rv">
       <h2>What is <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong>?</h2>
       <p>When you run an AI coding agent like Claude Code, it sometimes needs your permission before executing commands or editing files. Normally you have to be sitting at your terminal.</p>
-      <p>Farmer gives you a web dashboard that streams permission requests in real time over WebSocket. You can approve or deny from your phone, a different browser tab, or even while you are in a meeting. Zero external dependencies — standard library only.</p>
+      <p><strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong> gives you a web dashboard that streams permission requests in real time over WebSocket. You can approve or deny from your phone, a different browser tab, or even while you are in a meeting. Zero external dependencies — standard library only.</p>
     </div>
   </div>
 </section>
@@ -266,7 +266,7 @@ footer p{margin-bottom:6px}
       <div class="qs-step rv rv-d1">
         <div class="qs-num">1</div>
         <h3>Start the server</h3>
-        <p>Launch Farmer from your project directory. It prints a token-authenticated URL.</p>
+        <p>Launch <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong> from your project directory. It prints a token-authenticated URL.</p>
         <div class="copy-wrap">
           <pre class="qs-code"><code><span class="dim">$</span> <span class="cmd">npx @grainulator/farmer start</span></code></pre>
           <button class="copy-btn" onclick="copyText(this,'npx @grainulator/farmer start')">Copy</button>
@@ -278,7 +278,7 @@ Open this URL on your phone or another tab.</div>
       <div class="qs-step rv rv-d2">
         <div class="qs-num">2</div>
         <h3>Configure hooks</h3>
-        <p>Point your Claude Code settings at Farmer's hook endpoint.</p>
+        <p>Point your Claude Code settings at <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong>'s hook endpoint.</p>
         <div class="copy-wrap">
           <pre class="qs-code"><code><span class="dim">// .claude/settings.json</span>
 {
@@ -428,18 +428,18 @@ requests a tool call. No polling delay.</div>
     <div class="faq-grid">
       <div class="faq-item rv rv-d1">
         <h3>Do I need Node.js?</h3>
-        <p>Yes, Node 18 or later. But your project can use any language — Farmer works alongside any codebase.</p>
+        <p>Yes, Node 18 or later. But your project can use any language — <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong> works alongside any codebase.</p>
       </div>
       <div class="faq-item rv rv-d2">
         <h3>Does this only work with <strong style="color:#fff;font-size:110%"><span style="color:#fbbf24">w</span>heat</strong>?</h3>
-        <p>No. Farmer works with any Claude Code session. It hooks into the tool-call permission system, which applies to all agents, not just <strong style="color:#fff;font-size:110%"><span style="color:#fbbf24">w</span>heat</strong> sprints.</p>
+        <p>No. <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong> works with any Claude Code session. It hooks into the tool-call permission system, which applies to all agents, not just <strong style="color:#fff;font-size:110%"><span style="color:#fbbf24">w</span>heat</strong> sprints.</p>
       </div>
       <div class="faq-item rv rv-d3">
         <h3>Does this work with agents besides Claude Code?</h3>
-        <p>Currently <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong> is built for Claude Code's hook protocol, but the architecture is agent-agnostic. Any tool that can POST a JSON permission request to an HTTP endpoint can use farmer.</p>
+        <p>Currently <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong> is built for Claude Code's hook protocol, but the architecture is agent-agnostic. Any tool that can POST a JSON permission request to an HTTP endpoint can use <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong>.</p>
       </div>
       <div class="faq-item rv rv-d4">
-        <h3>How do I access farmer from my phone?</h3>
+        <h3>How do I access <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong> from my phone?</h3>
         <p><strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong> binds to localhost by default. To access it from your phone or another device, expose it via a tunnel (cloudflared, ngrok, tailscale) or bind to 0.0.0.0 to serve on your local network. Push notifications work via the built-in PWA — add the dashboard to your home screen for native-like alerts.</p>
       </div>
     </div>
@@ -471,7 +471,7 @@ requests a tool call. No polling delay.</div>
 <footer>
   <div class="container">
     <p>Part of the <a href="https://grainulator.github.io/grainulator/"><strong style="color:#fff"><span style="color:#a78bfa">gr</span>ainulator</strong></a> ecosystem</p>
-    <p><strong style="color:#fff"><span style="color:#22c55e">f</span>armer</strong> — <a href="https://github.com/grainulator/farmer">GitHub</a> — <a href="https://github.com/grainulator/farmer#readme">Docs</a></p>
+    <p><strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong> — <a href="https://github.com/grainulator/farmer">GitHub</a> — <a href="https://github.com/grainulator/farmer#readme">Docs</a></p>
   </div>
 </footer>
 
