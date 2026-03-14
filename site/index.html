@@ -36,7 +36,7 @@
   --green: #34d399;
   --text: #e8ecf1;
   --text-2: #9ba5b7;
-  --text-3: #5a6478;
+  --text-3: #8b95a5;
   --mono: 'SF Mono','Fira Code','Cascadia Code','Consolas',monospace;
   --sans: -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
   --max-w: 1080px;
@@ -98,16 +98,16 @@ nav .container{display:flex;align-items:center;justify-content:space-between}
 .quickstart{padding:80px 0 60px}
 .qs-label{text-align:center;font-size:.8125rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:40px;font-weight:600}
 .qs-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
-.qs-step{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:32px 28px}
+.qs-step{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:32px 28px;overflow:hidden;min-width:0}
 .qs-num{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--accent-dim);color:var(--accent);font-weight:700;font-size:.875rem;margin-bottom:16px}
 .qs-step h3{font-size:1.05rem;font-weight:700;margin-bottom:8px}
 .qs-step p{color:var(--text-2);font-size:.875rem;line-height:1.55;margin-bottom:16px}
-.qs-code{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:.8125rem;overflow-x:auto;white-space:pre;position:relative;line-height:1.6}
+.qs-code{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:.8125rem;overflow-x:auto;white-space:pre;position:relative;line-height:1.6;max-width:100%}
 .qs-code .cmd{color:var(--accent)}
 .qs-code .dim{color:var(--text-3)}
 .qs-code .str{color:#34d399}
 .qs-code .key{color:var(--accent)}
-.qs-output{margin-top:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:.75rem;color:var(--text-3);font-family:var(--mono);line-height:1.5;white-space:pre}
+.qs-output{margin-top:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:.75rem;color:var(--text-3);font-family:var(--mono);line-height:1.5;white-space:pre;overflow-x:auto;max-width:100%}
 /* Dashboard mockup */
 .example{padding:80px 0}
 .mockup{background:var(--bg-2);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.5);max-width:640px;margin:0 auto}
@@ -187,15 +187,16 @@ footer p{margin-bottom:6px}
 </style>
 </head>
 <body>
+<a href="#main" class="skip-link">Skip to main content</a>
 
-<div class="bg-ambient"><div class="orb"></div><div class="orb"></div></div>
+<div class="bg-ambient" aria-hidden="true"><div class="orb"></div><div class="orb"></div></div>
 
 <div class="page">
 
-<nav>
+<nav aria-label="Main navigation">
   <div class="container">
     <a href="#" class="nav-logo">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/></svg>
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/></svg>
       <span>farmer</span>
     </a>
     <div class="nav-links">
@@ -207,6 +208,8 @@ footer p{margin-bottom:6px}
   </div>
 </nav>
 
+<main id="main">
+
 <section class="hero">
   <div class="container">
     <div class="hero-badge hf hf1">Part of the grainulator ecosystem</div>
@@ -214,7 +217,7 @@ footer p{margin-bottom:6px}
     <p class="hero-sub hf hf3">Farmer is a real-time permission dashboard for Claude Code. When your AI agent wants to run a command, edit a file, or access a resource, you see a card on your phone and tap Approve or Deny. One tap. From anywhere.</p>
     <div class="hero-actions hf hf4">
       <a href="#quickstart" class="btn btn-primary">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
         Get started
       </a>
       <a href="#example" class="btn btn-ghost">See the dashboard</a>
@@ -244,7 +247,7 @@ footer p{margin-bottom:6px}
         <h3>Start the server</h3>
         <p>Launch Farmer from your project directory. It prints a token-authenticated URL.</p>
         <div class="copy-wrap">
-          <div class="qs-code"><span class="dim">$</span> <span class="cmd">npx @grainulator/farmer start</span></div>
+          <pre class="qs-code"><code><span class="dim">$</span> <span class="cmd">npx @grainulator/farmer start</span></code></pre>
           <button class="copy-btn" onclick="copyText(this,'npx @grainulator/farmer start')">Copy</button>
         </div>
         <div class="qs-output"><span style="color:var(--green)">Farmer running on port 9090</span>
@@ -256,7 +259,7 @@ Open this URL on your phone or another tab.</div>
         <h3>Configure hooks</h3>
         <p>Point your Claude Code settings at Farmer's hook endpoint.</p>
         <div class="copy-wrap">
-          <div class="qs-code"><span class="dim">// .claude/settings.json</span>
+          <pre class="qs-code"><code><span class="dim">// .claude/settings.json</span>
 {
   <span class="key">"hooks"</span>: {
     <span class="key">"PreToolUse"</span>: [{
@@ -275,7 +278,7 @@ execute and route them to Farmer.</div>
         <h3>Open the dashboard</h3>
         <p>Open the token URL in your browser or phone. Permission cards stream live as your agent works.</p>
         <div class="copy-wrap">
-          <div class="qs-code"><span class="dim"># Open the URL from step 1</span>
+          <pre class="qs-code"><code><span class="dim"># Open the URL from step 1</span>
 <span class="dim"># Cards stream in real time</span>
 <span class="dim"># Approve or deny with one tap</span></div>
         </div>
@@ -351,42 +354,42 @@ requests a tool call. No polling delay.</div>
     <div class="features-grid">
       <div class="feature-card rv rv-d1">
         <div class="feature-icon" style="background:var(--accent-dim);color:var(--accent)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
         </div>
         <h3>Token Authentication</h3>
         <p>Every session gets a unique token. No token, no access. The URL printed at startup is the only way in.</p>
       </div>
       <div class="feature-card rv rv-d2">
         <div class="feature-icon" style="background:var(--blue-dim);color:var(--blue)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
         </div>
         <h3>WebSocket Live Updates</h3>
         <p>Permission cards stream to your browser the instant they are requested. No polling, no lag.</p>
       </div>
       <div class="feature-card rv rv-d3">
         <div class="feature-icon" style="background:rgba(167,139,250,.12);color:var(--purple)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         </div>
         <h3>Multi-Session</h3>
         <p>Run multiple AI agents at once. Each gets its own session in the sidebar. Switch with one click.</p>
       </div>
       <div class="feature-card rv rv-d4">
         <div class="feature-icon" style="background:var(--orange-dim);color:var(--orange)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         </div>
         <h3>Trust Tiers</h3>
         <p>Paranoid, Standard, or Autonomous. Control how much your agent can do without asking.</p>
       </div>
       <div class="feature-card rv">
         <div class="feature-icon" style="background:rgba(255,255,255,.06);color:var(--text-2)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         </div>
         <h3>Audit Logging</h3>
         <p>Every approve, deny, and auto-decision is logged with timestamps. Full accountability.</p>
       </div>
       <div class="feature-card rv">
         <div class="feature-icon" style="background:var(--red-dim);color:var(--red)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
         </div>
         <h3>Mobile Ready</h3>
         <p>Responsive layout works on your phone. Approve from the couch, the bus, or a meeting.</p>
@@ -435,11 +438,13 @@ requests a tool call. No polling delay.</div>
       <a href="https://grainulator.github.io/mill/" class="eco-chip"><span class="eco-dot" style="background:#d97706"></span><span class="eco-name">mill</span> export</a>
       <a href="https://grainulator.github.io/silo/" class="eco-chip"><span class="eco-dot" style="background:#3b82f6"></span><span class="eco-name">silo</span> knowledge packs</a>
       <a href="https://grainulator.github.io/harvest/" class="eco-chip"><span class="eco-dot" style="background:#f97316"></span><span class="eco-name">harvest</span> analytics</a>
-      <a href="https://grainulator.github.io/field/" class="eco-chip"><span class="eco-dot" style="background:#a16207"></span><span class="eco-name">field</span> orchestration</a>
+      <a href="https://grainulator.github.io/field/" class="eco-chip"><span class="eco-dot" style="background:#c9891f"></span><span class="eco-name">field</span> orchestration</a>
       <a href="https://grainulator.github.io/grainulator/" class="eco-chip"><span class="eco-dot" style="background:#fbbf24"></span><span class="eco-name">grainulator</span> the ecosystem</a>
     </div>
   </div>
 </section>
+
+</main>
 
 <footer>
   <div class="container">
