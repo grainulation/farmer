@@ -1,0 +1,132 @@
+/* Mobile overrides — Farmer stays functional on small screens */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-w: 0px;
+  }
+
+  .app {
+    grid-template-columns: 1fr;
+  }
+
+  /* Hide sidebar by default on mobile, show via toggle */
+  .sidebar {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: 260px;
+    z-index: 1000;
+    background: #0a0e1a;
+    border-right: 1px solid var(--border);
+    box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+  }
+  .sidebar.open {
+    display: block;
+  }
+
+  /* Mobile menu button (inject via JS if needed) */
+  .mobile-menu-btn {
+    display: block;
+    padding: 6px 10px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  .header {
+    padding: 8px 12px;
+  }
+
+  .header h1 {
+    font-size: 14px;
+  }
+
+  .trust-badge {
+    font-size: 10px;
+    padding: 2px 8px;
+  }
+
+  .pane-tabs {
+    padding: 0 8px;
+  }
+
+  .pane-tab {
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+
+  .split-top {
+    padding: 12px;
+  }
+
+  .split-bottom {
+    flex: 0 0 200px;
+    padding: 8px 12px;
+  }
+
+  .split-bottom-header {
+    padding: 6px 12px 2px;
+  }
+
+  .perm-card {
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+
+  .perm-body {
+    font-size: 12px;
+    max-height: 120px;
+    padding: 8px 10px;
+  }
+
+  .perm-actions {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+
+  .question-input {
+    font-size: 16px; /* prevents iOS zoom */
+  }
+
+  .activity-item {
+    font-size: 11px;
+    padding: 6px 0;
+  }
+
+  .activity-detail {
+    font-size: 10px;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+  .header {
+    padding: 6px 8px;
+  }
+
+  .perm-header {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .perm-session-tag {
+    font-size: 9px;
+  }
+
+  .perm-time {
+    width: 100%;
+    font-size: 10px;
+  }
+
+  .quick-rules {
+    display: none; /* too small for rule dropdowns */
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "name": "@grainulator/farmer",
+  "version": "0.1.0",
+  "description": "Desktop-first permission dashboard for AI coding agents",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "farmer": "./bin/farmer.js"
+  },
+  "main": "./lib/server.js",
+  "scripts": {
+    "start": "node bin/farmer.js start",
+    "stop": "node bin/farmer.js stop",
+    "status": "node bin/farmer.js status",
+    "test": "node --test test/"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "public/",
+    "README.md"
+  ],
+  "keywords": [
+    "ai",
+    "permissions",
+    "dashboard",
+    "claude-code",
+    "agent",
+    "developer-tools"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grainulator/farmer"
+  }
+}

@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Farmer</title>
+<link rel="stylesheet" href="mobile.css">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg2: rgba(255,255,255,0.06);
+    --bg3: rgba(255,255,255,0.10);
+    --glass: rgba(255,255,255,0.08);
+    --glass-border: rgba(255,255,255,0.12);
+    --glass-blur: 20px;
+    --accent: #3b82f6;
+    --accent-light: #60a5fa;
+    --green: #22c55e;
+    --orange: #f59e0b;
+    --red: #ef4444;
+    --purple: #a78bfa;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --dim: #64748b;
+    --border: rgba(255,255,255,0.08);
+    --sidebar-w: 260px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(59,130,246,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(167,139,250,0.04) 0%, transparent 50%);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── Desktop layout: sidebar + main ── */
+  .app {
+    display: grid;
+    grid-template-columns: var(--sidebar-w) 1fr;
+    grid-template-rows: auto 1fr;
+    height: 100vh;
+  }
+
+  /* ── Header (spans full width) ── */
+  .header {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: var(--glass);
+    backdrop-filter: blur(var(--glass-blur));
+    border-bottom: 1px solid var(--glass-border);
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .header h1 {
+    font-size: 16px; font-weight: 800; letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #f0a030, #fbbf24, #f59e0b);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .conn-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); }
+  .conn-dot.connected { background: var(--green); }
+  .conn-label { font-size: 12px; color: var(--muted); }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .trust-badge {
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 3px 10px; border-radius: 12px; cursor: pointer;
+  }
+  .trust-badge.paranoid { background: rgba(239,68,68,0.15); color: var(--red); }
+  .trust-badge.standard { background: rgba(245,158,11,0.15); color: var(--orange); }
+  .trust-badge.autonomous { background: rgba(34,197,94,0.15); color: var(--green); }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    background: rgba(0,0,0,0.3);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .sidebar::-webkit-scrollbar { display: none; }
+  .sidebar-title {
+    padding: 14px 16px 8px;
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--dim);
+  }
+
+  .session-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px; cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: background 0.1s;
+  }
+  .session-item:hover { background: var(--bg2); }
+  .session-item.active { background: var(--bg2); border-left-color: var(--accent); }
+
+  .session-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .session-info { flex: 1; min-width: 0; }
+  .session-label {
+    font-size: 13px; font-weight: 600; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .session-meta {
+    font-size: 11px; color: var(--dim);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .session-badge {
+    font-size: 10px; font-weight: 700; min-width: 18px; height: 18px;
+    line-height: 18px; text-align: center; border-radius: 9px;
+    background: var(--red); color: white; padding: 0 5px;
+  }
+  .session-status-dot {
+    width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+  }
+  .session-status-dot.active { background: var(--green); }
+  .session-status-dot.stale { background: var(--orange); }
+  .session-status-dot.ended { background: var(--dim); }
+
+  /* ── Main area: split pane ── */
+  .main {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Pane header tabs */
+  .pane-tabs {
+    display: flex; gap: 0;
+    background: var(--glass);
+    border-bottom: 1px solid var(--glass-border);
+    flex-shrink: 0; padding: 0 16px;
+  }
+  .pane-tab {
+    padding: 8px 16px; font-size: 12px; font-weight: 500;
+    color: var(--muted); cursor: pointer;
+    border-bottom: 2px solid transparent; transition: all 0.15s;
+    position: relative;
+  }
+  .pane-tab:hover { color: var(--text); }
+  .pane-tab.active { color: var(--accent-light); border-bottom-color: var(--accent); }
+  .pane-tab .tab-badge {
+    position: absolute; top: 4px; right: 2px;
+    background: var(--red); color: white;
+    font-size: 9px; font-weight: 700;
+    min-width: 14px; height: 14px; line-height: 14px;
+    text-align: center; padding: 0 3px; border-radius: 7px;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+  /* Split pane: permissions (top) + activity (bottom) */
+  .split-top {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg3) transparent;
+    min-height: 0;
+  }
+  .split-divider {
+    height: 1px; background: var(--border); flex-shrink: 0;
+    position: relative;
+  }
+  .split-divider::after {
+    content: ''; position: absolute; top: -4px; left: 0; right: 0;
+    height: 9px; cursor: row-resize;
+  }
+  .split-bottom {
+    flex: 0 0 280px;
+    overflow-y: auto;
+    padding: 12px 20px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg3) transparent;
+  }
+  .split-bottom-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 20px 4px; flex-shrink: 0;
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--dim);
+  }
+
+  /* ── Permission cards ── */
+  .perm-card {
+    background: var(--glass); backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border); border-radius: 12px;
+    padding: 16px 20px; margin-bottom: 12px;
+    border-left: 4px solid var(--orange);
+    animation: cardIn 0.25s ease-out;
+  }
+  @keyframes cardIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+  .perm-card.resolved { opacity: 0.4; border-left-color: var(--dim); }
+  .perm-card.danger { border-left-color: var(--red); background: rgba(239,68,68,0.04); }
+  .perm-card.question-card { border-left-color: var(--accent); }
+
+  .perm-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .perm-tool {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--orange);
+  }
+  .perm-card.question-card .perm-tool { color: var(--accent-light); }
+  .perm-card.danger .perm-tool { color: var(--red); }
+  .perm-session-tag {
+    font-size: 10px; font-weight: 600; padding: 1px 8px;
+    border-radius: 10px; color: white; opacity: 0.8;
+  }
+  .perm-time { font-size: 11px; color: var(--dim); margin-left: auto; }
+
+  .perm-body {
+    font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px;
+    background: rgba(0,0,0,0.3); padding: 10px 14px; border-radius: 8px;
+    white-space: pre-wrap; word-break: break-all; color: var(--text);
+    border: 1px solid var(--glass-border); max-height: 180px; overflow-y: auto;
+  }
+
+  .perm-actions { display: flex; gap: 10px; margin-top: 10px; align-items: center; }
+  .btn {
+    padding: 7px 20px; border: none; border-radius: 8px;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+  }
+  .btn-allow { background: var(--green); color: #000; }
+  .btn-deny { background: var(--red); color: #fff; }
+  .btn-send { background: var(--accent); color: #fff; }
+  .btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+  .question-input {
+    width: 100%; padding: 8px 12px; background: var(--bg);
+    border: 1px solid var(--accent); color: var(--text);
+    border-radius: 8px; font-size: 14px; font-family: inherit;
+    margin-top: 8px; resize: vertical; min-height: 36px;
+  }
+  .question-input:focus { outline: none; border-color: var(--accent-light); box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
+
+  .quick-rules { margin-left: auto; position: relative; }
+  .quick-rules-btn {
+    padding: 5px 10px; font-size: 11px; background: var(--bg3);
+    border: 1px solid var(--border); color: var(--muted);
+    border-radius: 6px; cursor: pointer;
+  }
+  .quick-rules-btn:hover { color: var(--text); border-color: var(--accent); }
+  .quick-rules-menu {
+    display: none; position: absolute; right: 0; bottom: 100%; margin-bottom: 4px;
+    background: #1a1f2e; border: 1px solid var(--border); border-radius: 8px;
+    padding: 4px 0; min-width: 240px; z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  }
+  .quick-rules-menu.open { display: block; }
+  .quick-rules-menu .qr-item {
+    padding: 7px 14px; font-size: 12px; color: var(--muted); cursor: pointer;
+  }
+  .quick-rules-menu .qr-item:hover { background: var(--bg3); color: var(--text); }
+
+  /* ── Activity feed ── */
+  .activity-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 12px;
+  }
+  .activity-icon {
+    width: 24px; height: 24px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; flex-shrink: 0; margin-top: 1px;
+  }
+  .activity-icon.success { background: rgba(34,197,94,0.15); color: var(--green); }
+  .activity-icon.failure { background: rgba(239,68,68,0.15); color: var(--red); }
+  .activity-icon.decision { background: rgba(59,130,246,0.15); color: var(--accent-light); }
+  .activity-icon.notification { background: rgba(167,139,250,0.15); color: var(--purple); }
+  .activity-body { flex: 1; min-width: 0; }
+  .activity-tool { font-weight: 600; color: var(--text); }
+  .activity-detail { color: var(--muted); font-family: monospace; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .activity-time { color: var(--dim); font-size: 10px; flex-shrink: 0; }
+
+  /* ── Empty state ── */
+  .empty-state {
+    text-align: center; padding: 40px 20px; color: var(--dim); font-size: 14px;
+  }
+  .empty-state .icon { font-size: 32px; margin-bottom: 12px; opacity: 0.5; }
+
+  /* ── Connection/heartbeat banners ── */
+  .banner {
+    display: none; padding: 8px 16px; font-size: 12px; font-weight: 600;
+    text-align: center; grid-column: 1 / -1;
+  }
+  .banner.blocked { display: block; background: rgba(239,68,68,0.15); color: var(--red); border-bottom: 1px solid rgba(239,68,68,0.2); }
+  .banner.disconnected { display: block; background: rgba(245,158,11,0.15); color: var(--orange); border-bottom: 1px solid rgba(245,158,11,0.2); }
+
+  /* ── Scrollbar styling ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <h1>Farmer</h1>
+      <div style="display:flex;align-items:center;gap:6px">
+        <div class="conn-dot" id="connDot"></div>
+        <span class="conn-label" id="connLabel">Connecting...</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="trust-badge paranoid" id="trustBadge" onclick="cycleTrust()">PARANOID</span>
+    </div>
+  </div>
+
+  <!-- Banner row -->
+  <div class="banner" id="banner"></div>
+
+  <!-- Sidebar: sessions -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-title">Sessions</div>
+    <div id="sessionList">
+      <div class="empty-state" style="padding:24px 16px;font-size:12px">No sessions yet</div>
+    </div>
+  </div>
+
+  <!-- Main split pane -->
+  <div class="main">
+    <div class="pane-tabs">
+      <div class="pane-tab active" data-pane="permissions" onclick="switchPane('permissions', this)">
+        Permissions <span class="tab-badge" id="permBadge" style="display:none">0</span>
+      </div>
+      <div class="pane-tab" data-pane="messages" onclick="switchPane('messages', this)">Messages</div>
+      <div class="pane-tab" data-pane="settings" onclick="switchPane('settings', this)">Settings</div>
+    </div>
+
+    <!-- Permissions pane (default) -->
+    <div class="pane-content" id="pane-permissions" style="display:flex;flex-direction:column;flex:1;min-height:0">
+      <div class="split-top" id="permList">
+        <div class="empty-state"><div class="icon">&#9632;</div>No pending permissions<br><span style="font-size:12px;color:var(--dim)">Requests from your AI agent will appear here</span></div>
+      </div>
+      <div class="split-divider"></div>
+      <div class="split-bottom-header">Activity Feed</div>
+      <div class="split-bottom" id="activityList">
+        <div class="empty-state" style="padding:16px;font-size:12px">No activity yet</div>
+      </div>
+    </div>
+
+    <!-- Messages pane -->
+    <div class="pane-content" id="pane-messages" style="display:none;flex:1;overflow-y:auto;padding:16px 20px">
+      <div class="empty-state"><div class="icon">&#9993;</div>No messages yet</div>
+    </div>
+
+    <!-- Settings pane -->
+    <div class="pane-content" id="pane-settings" style="display:none;flex:1;overflow-y:auto;padding:20px">
+      <div style="max-width:500px">
+        <h3 style="font-size:14px;margin-bottom:12px">Trust Level</h3>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Controls which tools are auto-approved without asking.</p>
+        <div style="display:flex;gap:8px;margin-bottom:24px">
+          <button class="btn" style="background:rgba(239,68,68,0.15);color:var(--red)" onclick="setTrust('paranoid')">Paranoid</button>
+          <button class="btn" style="background:rgba(245,158,11,0.15);color:var(--orange)" onclick="setTrust('standard')">Standard</button>
+          <button class="btn" style="background:rgba(34,197,94,0.15);color:var(--green)" onclick="setTrust('autonomous')">Autonomous</button>
+        </div>
+        <h3 style="font-size:14px;margin-bottom:12px">Auto-Approve Rules</h3>
+        <div id="rulesList" style="margin-bottom:12px;font-size:12px;color:var(--muted)">No custom rules</div>
+        <div style="display:flex;gap:8px">
+          <input id="ruleToolInput" placeholder="Tool name (e.g. Bash)" style="flex:1;padding:6px 10px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;font-size:13px">
+          <input id="rulePatternInput" placeholder="Pattern (optional)" style="flex:1;padding:6px 10px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;font-size:13px">
+          <button class="btn btn-send" onclick="addRule()" style="padding:6px 14px;font-size:12px">Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──
+const TOKEN = '{{TOKEN}}';
+let csrfToken = '';
+let state = { pending: [], activity: [], sessions: [], trustLevel: 'paranoid', sessionRules: [], messages: [] };
+let selectedSession = null; // null = all sessions
+let ws = null;
+let reconnectDelay = 1000;
+
+// ── WebSocket connection ──
+function connect() {
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  ws = new WebSocket(`${proto}//${location.host}/ws`);
+
+  ws.onopen = () => {
+    ws.send(JSON.stringify({ type: 'auth', token: TOKEN }));
+    reconnectDelay = 1000;
+    setConn(true);
+  };
+
+  ws.onmessage = (e) => {
+    try {
+      const msg = JSON.parse(e.data);
+      handleMessage(msg);
+    } catch {}
+  };
+
+  ws.onclose = () => {
+    setConn(false);
+    setTimeout(connect, reconnectDelay);
+    reconnectDelay = Math.min(reconnectDelay * 1.5, 15000);
+  };
+
+  ws.onerror = () => {};
+}
+
+function setConn(ok) {
+  document.getElementById('connDot').classList.toggle('connected', ok);
+  document.getElementById('connLabel').textContent = ok ? 'Connected' : 'Reconnecting...';
+}
+
+// ── Message handler ──
+function handleMessage(msg) {
+  switch (msg.type) {
+    case 'init':
+      csrfToken = msg.data.csrfToken || '';
+      state.pending = msg.data.pending || [];
+      state.activity = msg.data.activity || [];
+      state.sessions = msg.data.sessions || [];
+      state.trustLevel = msg.data.trustLevel || 'paranoid';
+      state.sessionRules = msg.data.sessionRules || [];
+      renderAll();
+      break;
+
+    case 'permission_request':
+      state.pending.push(msg.data);
+      renderPermissions();
+      renderSessions();
+      notifySound();
+      break;
+
+    case 'permission_resolved':
+    case 'permission_expired': {
+      const idx = state.pending.findIndex(p => p.requestId === (msg.data.requestId || msg.data.id));
+      if (idx !== -1) state.pending.splice(idx, 1);
+      renderPermissions();
+      renderSessions();
+      break;
+    }
+
+    case 'auto_approved':
+      state.activity.push({ type: 'decision', tool_name: msg.data.tool_name, decision: 'auto-allowed', reason: msg.data.reason, session_id: msg.session_id, timestamp: Date.now() });
+      renderActivity();
+      break;
+
+    case 'activity':
+      state.activity.push(msg.data);
+      if (state.activity.length > 200) state.activity = state.activity.slice(-200);
+      renderActivity();
+      break;
+
+    case 'message': {
+      if (!state.messages) state.messages = [];
+      state.messages.push(msg.data);
+      if (state.messages.length > 100) state.messages = state.messages.slice(-100);
+      renderMessages();
+      break;
+    }
+
+    case 'notification_card':
+      state.activity.push({ type: 'notification', tool_name: msg.data.tool_name, tool_input: { prompt: msg.data.prompt }, session_id: msg.session_id, timestamp: Date.now() });
+      renderActivity();
+      break;
+
+    case 'session_new':
+    case 'session_start': {
+      const existing = state.sessions.findIndex(s => s.id === (msg.session_id || msg.data?.id));
+      if (existing !== -1) Object.assign(state.sessions[existing], msg.data);
+      else state.sessions.push(msg.data);
+      renderSessions();
+      break;
+    }
+
+    case 'session_end':
+    case 'session_stale': {
+      const s = state.sessions.find(s => s.id === msg.session_id);
+      if (s) s.status = msg.type === 'session_end' ? 'ended' : 'stale';
+      renderSessions();
+      break;
+    }
+
+    case 'session_removed': {
+      state.sessions = state.sessions.filter(s => s.id !== msg.session_id);
+      if (selectedSession === msg.session_id) selectedSession = null;
+      renderSessions();
+      renderPermissions();
+      break;
+    }
+
+    case 'trust_level':
+      state.trustLevel = msg.data.level;
+      renderTrustBadge();
+      break;
+
+    case 'rules_updated':
+      state.sessionRules = msg.data.sessionRules || [];
+      renderRules();
+      break;
+
+    case 'heartbeat':
+      // Update session liveness
+      if (msg.data.sessions) {
+        for (const hb of msg.data.sessions) {
+          const s = state.sessions.find(x => x.id === hb.id);
+          if (s) { s.status = hb.status; s.lastActivity = hb.lastActivity; s.pending_count = hb.pending_count; }
+        }
+        renderSessions();
+      }
+      // Check for blocked CLI
+      const blocked = msg.data.sessions?.some(s => s.pending_count > 0 && (Date.now() - s.oldest_pending > 30000));
+      const banner = document.getElementById('banner');
+      if (blocked) { banner.className = 'banner blocked'; banner.textContent = 'CLI is waiting for your approval'; }
+      else { banner.className = 'banner'; }
+      break;
+  }
+}
+
+// ── Render functions ──
+function renderAll() {
+  renderSessions();
+  renderPermissions();
+  renderActivity();
+  renderMessages();
+  renderTrustBadge();
+  renderRules();
+}
+
+function renderSessions() {
+  const el = document.getElementById('sessionList');
+  if (state.sessions.length === 0) {
+    el.innerHTML = '<div class="empty-state" style="padding:24px 16px;font-size:12px">No sessions yet</div>';
+    return;
+  }
+  el.innerHTML = state.sessions.map(s => {
+    const pending = state.pending.filter(p => p.session_id === s.id).length;
+    const isActive = selectedSession === s.id;
+    const statusClass = s.status || 'active';
+    return `<div class="session-item ${isActive ? 'active' : ''}" onclick="selectSession('${s.id}')">
+      <div class="session-dot" style="background:hsl(${s.color || 200},60%,50%)"></div>
+      <div class="session-info">
+        <div class="session-label">${esc(s.label || s.id.slice(0,8))}</div>
+        <div class="session-meta"><span class="session-status-dot ${statusClass}"></span> ${statusClass}${s.trust ? ' · ' + s.trust : ''}</div>
+      </div>
+      ${pending > 0 ? `<div class="session-badge">${pending}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderPermissions() {
+  const el = document.getElementById('permList');
+  const filtered = selectedSession
+    ? state.pending.filter(p => p.session_id === selectedSession)
+    : state.pending;
+
+  // Update badge
+  const badge = document.getElementById('permBadge');
+  if (filtered.length > 0) { badge.style.display = ''; badge.textContent = filtered.length; }
+  else { badge.style.display = 'none'; }
+
+  if (filtered.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="icon">&#9632;</div>No pending permissions<br><span style="font-size:12px;color:var(--dim)">Requests from your AI agent will appear here</span></div>';
+    return;
+  }
+
+  el.innerHTML = filtered.map(p => {
+    const isQ = p.isQuestion || p.tool_name === 'AskUserQuestion' || p.tool_name === 'Request';
+    const isDanger = !isQ && (p.tool_name === 'Bash' || p.tool_name === 'Write' || p.tool_name === 'Edit');
+    const cardClass = isQ ? 'question-card' : (isDanger ? 'danger' : '');
+    const inputStr = formatToolInput(p.tool_name, p.tool_input);
+    const session = state.sessions.find(s => s.id === p.session_id);
+    const sessionColor = session?.color || p.session_color || 200;
+    const sessionLabel = session?.label || p.session_label || p.session_id?.slice(0,6) || '?';
+    const timeStr = p.timestamp ? new Date(p.timestamp).toLocaleTimeString() : '';
+
+    let actionsHtml;
+    if (isQ) {
+      actionsHtml = `<textarea class="question-input" id="qi-${p.requestId}" placeholder="Type your response..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();respond('${p.requestId}')}"></textarea>
+        <div class="perm-actions"><button class="btn btn-send" onclick="respond('${p.requestId}')">Send</button></div>`;
+    } else {
+      actionsHtml = `<div class="perm-actions">
+        <button class="btn btn-allow" onclick="decide('${p.requestId}',true)">Approve</button>
+        <button class="btn btn-deny" onclick="decide('${p.requestId}',false)">Deny</button>
+        <div class="quick-rules"><button class="quick-rules-btn" onclick="toggleQR(this)">+ Rule</button>
+          <div class="quick-rules-menu">
+            <div class="qr-item" onclick="quickRule('${esc(p.tool_name)}',null,'${p.requestId}')">Always allow ${esc(p.tool_name)}</div>
+            ${p.tool_input?.file_path ? `<div class="qr-item" onclick="quickRule('${esc(p.tool_name)}','${esc(p.tool_input.file_path)}','${p.requestId}')">Allow ${esc(p.tool_name)} for this file</div>` : ''}
+          </div>
+        </div>
+      </div>`;
+    }
+
+    return `<div class="perm-card ${cardClass}">
+      <div class="perm-header">
+        <span class="perm-tool">${esc(p.tool_name)}</span>
+        <span class="perm-session-tag" style="background:hsl(${sessionColor},50%,40%)">${esc(sessionLabel)}</span>
+        <span class="perm-time">${timeStr}</span>
+      </div>
+      <div class="perm-body">${esc(inputStr)}</div>
+      ${actionsHtml}
+    </div>`;
+  }).join('');
+}
+
+function renderActivity() {
+  const el = document.getElementById('activityList');
+  const filtered = selectedSession
+    ? state.activity.filter(a => a.session_id === selectedSession)
+    : state.activity;
+  const recent = filtered.slice(-50).reverse();
+
+  if (recent.length === 0) {
+    el.innerHTML = '<div class="empty-state" style="padding:16px;font-size:12px">No activity yet</div>';
+    return;
+  }
+
+  el.innerHTML = recent.map(a => {
+    const icon = a.type === 'success' ? '&#10003;' : a.type === 'failure' ? '&#10007;' : a.type === 'notification' ? '&#9993;' : '&#9670;';
+    const iconClass = a.type || 'decision';
+    const detail = formatToolInput(a.tool_name, a.tool_input);
+    const timeStr = a.timestamp ? new Date(a.timestamp).toLocaleTimeString() : '';
+    return `<div class="activity-item">
+      <div class="activity-icon ${iconClass}">${icon}</div>
+      <div class="activity-body">
+        <span class="activity-tool">${esc(a.tool_name || 'system')}</span>
+        ${a.decision ? ` <span style="color:${a.decision.includes('allow') ? 'var(--green)' : 'var(--red)'};font-size:11px">${esc(a.decision)}</span>` : ''}
+        <div class="activity-detail">${esc(detail.slice(0, 120))}</div>
+      </div>
+      <span class="activity-time">${timeStr}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderMessages() {
+  const el = document.getElementById('pane-messages');
+  const msgs = state.messages || [];
+  const filtered = selectedSession
+    ? msgs.filter(m => m.session_id === selectedSession)
+    : msgs;
+
+  if (filtered.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="icon">&#9993;</div>No messages yet</div>';
+    return;
+  }
+
+  el.innerHTML = filtered.slice(-50).map(m => {
+    const timeStr = m.timestamp ? new Date(m.timestamp).toLocaleTimeString() : '';
+    return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:11px;color:var(--dim)">${esc(m.session_id?.slice(0,8) || '')}</span>
+        <span style="font-size:10px;color:var(--dim)">${timeStr}</span>
+      </div>
+      <div style="font-size:13px;color:var(--muted);white-space:pre-wrap">${esc(m.content || '')}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderTrustBadge() {
+  const badge = document.getElementById('trustBadge');
+  badge.className = `trust-badge ${state.trustLevel}`;
+  badge.textContent = state.trustLevel.toUpperCase();
+}
+
+function renderRules() {
+  const el = document.getElementById('rulesList');
+  if (!state.sessionRules || state.sessionRules.length === 0) {
+    el.innerHTML = '<div style="color:var(--dim);font-size:12px">No custom rules</div>';
+    return;
+  }
+  el.innerHTML = state.sessionRules.map((r, i) =>
+    `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border)">
+      <span style="font-weight:600;color:var(--text)">${esc(r.tool)}</span>
+      ${r.pattern ? `<span style="color:var(--dim);font-family:monospace;font-size:11px">${esc(r.pattern)}</span>` : '<span style="color:var(--dim);font-size:11px">any</span>'}
+      <button class="btn" style="margin-left:auto;padding:2px 8px;font-size:10px;background:var(--bg3);color:var(--muted)" onclick="removeRule(${i})">Remove</button>
+    </div>`
+  ).join('');
+}
+
+// ── Actions ──
+function decide(requestId, allow) {
+  api('/api/decide', { requestId, allow, reason: allow ? 'Approved' : 'Denied' });
+}
+
+function respond(requestId) {
+  const input = document.getElementById('qi-' + requestId);
+  const response = input?.value || '';
+  api('/api/decide', { requestId, allow: false, response });
+}
+
+function selectSession(id) {
+  selectedSession = selectedSession === id ? null : id;
+  renderSessions();
+  renderPermissions();
+  renderActivity();
+  renderMessages();
+}
+
+function switchPane(name, tab) {
+  document.querySelectorAll('.pane-content').forEach(p => p.style.display = 'none');
+  document.querySelectorAll('.pane-tab').forEach(t => t.classList.remove('active'));
+  const pane = document.getElementById('pane-' + name);
+  if (pane) pane.style.display = name === 'permissions' ? 'flex' : '';
+  if (tab) tab.classList.add('active');
+}
+
+function cycleTrust() {
+  const levels = ['paranoid', 'standard', 'autonomous'];
+  const next = levels[(levels.indexOf(state.trustLevel) + 1) % levels.length];
+  setTrust(next);
+}
+
+function setTrust(level) {
+  const payload = { level };
+  if (selectedSession) payload.session_id = selectedSession;
+  api('/api/trust-level', payload);
+}
+
+function addRule() {
+  const tool = document.getElementById('ruleToolInput').value.trim();
+  if (!tool) return;
+  const pattern = document.getElementById('rulePatternInput').value.trim() || null;
+  api('/api/rules', { action: 'add', rule: { tool, pattern } });
+  document.getElementById('ruleToolInput').value = '';
+  document.getElementById('rulePatternInput').value = '';
+}
+
+function removeRule(idx) {
+  const rule = state.sessionRules[idx];
+  if (rule) api('/api/rules', { action: 'remove', rule });
+}
+
+function quickRule(tool, pattern, requestId) {
+  api('/api/rules', { action: 'add', rule: { tool, pattern } });
+  decide(requestId, true);
+}
+
+function toggleQR(btn) {
+  const menu = btn.nextElementSibling;
+  menu.classList.toggle('open');
+  setTimeout(() => document.addEventListener('click', function close(e) {
+    if (!menu.contains(e.target)) { menu.classList.remove('open'); document.removeEventListener('click', close); }
+  }), 0);
+}
+
+// ── API helper ──
+function api(path, body) {
+  fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+    credentials: 'same-origin',
+    body: JSON.stringify(body),
+  }).catch(err => console.error('API error:', err));
+}
+
+// ── Utilities ──
+function esc(s) {
+  if (!s) return '';
+  const d = document.createElement('div');
+  d.textContent = String(s);
+  return d.innerHTML;
+}
+
+function formatToolInput(toolName, input) {
+  if (!input) return '';
+  if (typeof input === 'string') return input;
+  if (input.command) return input.command;
+  if (input.prompt || input.question) return input.prompt || input.question;
+  if (input.file_path) {
+    let s = input.file_path;
+    if (input.old_string) s += '\n--- Replace:\n' + input.old_string + '\n+++ With:\n' + (input.new_string || '');
+    else if (input.content) s += '\n' + input.content.slice(0, 300);
+    return s;
+  }
+  if (input.pattern) return `pattern: ${input.pattern}`;
+  return JSON.stringify(input, null, 2).slice(0, 400);
+}
+
+function notifySound() {
+  // Short beep via AudioContext
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 800; gain.gain.value = 0.1;
+    osc.start(); osc.stop(ctx.currentTime + 0.1);
+  } catch {}
+}
+
+// ── Boot ──
+connect();
+</script>
+</body>
+</html>
