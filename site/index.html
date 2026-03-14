@@ -108,8 +108,6 @@ nav .container{display:flex;align-items:center;justify-content:space-between}
 .qs-code .str{color:#34d399}
 .qs-code .key{color:var(--accent)}
 .qs-output{margin-top:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:.75rem;color:var(--text-3);font-family:var(--mono);line-height:1.5;white-space:pre}
-@media(max-width:720px){.qs-steps{grid-template-columns:1fr}}
-
 /* Dashboard mockup */
 .example{padding:80px 0}
 .mockup{background:var(--bg-2);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.5);max-width:640px;margin:0 auto}
@@ -163,7 +161,29 @@ footer p{margin-bottom:6px}
 .copy-btn:hover{color:var(--text);border-color:var(--border-light)}
 .copy-btn.copied{color:var(--accent);border-color:var(--accent)}
 
-@media(max-width:600px){.nav-links a:not(.nav-cta){display:none}.hero{padding:80px 0 60px}.mockup-body{padding:16px}}
+@media(max-width:720px){
+  .qs-steps,.features-grid,.eco-grid{grid-template-columns:1fr}
+  .hero{padding:80px 0 60px}
+  .hero h1{font-size:2rem}
+  .qs-code,.qs-output,pre,code{font-size:12px;overflow-x:auto}
+  .container{padding:0 16px}
+  section,.what-is,.quickstart,.features,.faq,.ecosystem,.example{padding:60px 0}
+  .what-box{padding:28px 20px}
+  .faq-item{padding:20px 18px}
+  .mockup-body{padding:16px}
+  .mock-cmd{font-size:.65rem}
+}
+@media(max-width:480px){
+  .hero h1{font-size:1.6rem}
+  .hero-sub,.section-sub{font-size:0.95rem}
+  .nav-links a:not(.nav-cta){display:none}
+  .hero-actions{flex-direction:column}
+  .btn{width:100%;justify-content:center;min-height:44px}
+  .eco-chip{padding:10px 12px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:0.01ms !important;transition-duration:0.01ms !important}
+}
 </style>
 </head>
 <body>
