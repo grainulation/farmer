@@ -67,12 +67,12 @@ code,pre{font-family:var(--mono)}
 
 nav{position:sticky;top:0;z-index:100;background:rgba(9,9,11,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:14px 0}
 nav .container{display:flex;align-items:center;justify-content:space-between}
-.nav-logo{font-weight:700;font-size:1.1rem;letter-spacing:-.02em;color:var(--text);text-decoration:none}
+.nav-logo{font-weight:700;font-size:2rem;letter-spacing:-.02em;color:var(--text);text-decoration:none}
 .nav-logo span{color:var(--accent)}
 .nav-links{display:flex;gap:24px;font-size:.875rem;color:var(--text-2);align-items:center}
 .nav-links a{color:var(--text-2);transition:color .2s}
 .nav-links a:hover{color:var(--text);text-decoration:none}
-.nav-cta{background:transparent;color:var(--text);padding:6px 16px;border-radius:6px;font-weight:600;font-size:.8125rem;transition:all .2s;border:1px solid var(--border-light)}.nav-cta:hover{background:var(--surface-hover);text-decoration:none;color:var(--text)}
+.nav-cta{background:transparent;border:none;color:var(--text-2);padding:6px;display:flex;align-items:center;transition:color .2s}.nav-cta:hover{color:var(--text);text-decoration:none}
 
 .hero{padding:100px 0 80px;text-align:center}
 .hero-badge{display:inline-block;padding:5px 14px;border:1px solid var(--border-light);border-radius:100px;font-size:.75rem;color:var(--text-2);margin-bottom:24px;letter-spacing:.04em;text-transform:uppercase}
@@ -81,10 +81,12 @@ nav .container{display:flex;align-items:center;justify-content:space-between}
 .hero p.hero-sub{font-size:clamp(1.05rem,2vw,1.25rem);color:var(--text-2);max-width:600px;margin:0 auto 40px;line-height:1.55}
 .hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:10px;font-weight:600;font-size:.9375rem;transition:all .2s}
+.btn svg { transition: transform 0.2s ease; }
+.btn:hover svg { transform: translateX(3px); }
 .btn-primary{background:var(--accent);color:#000}.btn-primary:hover{opacity:.88;text-decoration:none;transform:translateY(-1px)}
 .btn-ghost{border:1px solid var(--border-light);color:var(--text)}.btn-ghost:hover{background:var(--surface-hover);text-decoration:none;transform:translateY(-1px)}
 
-.section-label{font-size:.8125rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:12px;font-weight:600}
+.section-label{font-size:1.5rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:12px;font-weight:600}
 .section-title{font-size:clamp(1.6rem,3.5vw,2.2rem);font-weight:800;letter-spacing:-.03em;margin-bottom:16px;line-height:1.15}
 .section-sub{color:var(--text-2);font-size:1.05rem;max-width:620px;margin-bottom:48px;line-height:1.55}
 
@@ -92,16 +94,17 @@ nav .container{display:flex;align-items:center;justify-content:space-between}
 .what-is{padding:80px 0 60px}
 .what-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:40px 36px;max-width:720px;margin:0 auto;text-align:center}
 .what-box h2{font-size:1.3rem;font-weight:700;margin-bottom:16px}
-.what-box p{color:var(--text-2);font-size:1rem;line-height:1.65}
+.what-box p{color:var(--text-2);font-size:1rem;line-height:1.65;margin-bottom:10px}
+.what-box p:last-child{margin-bottom:0}
 
 .quickstart{padding:80px 0 60px}
 .qs-label{text-align:center;font-size:.8125rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:40px;font-weight:600}
-.qs-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.qs-steps{display:grid;grid-template-columns:1fr;gap:24px;max-width:680px;margin:0 auto}
 .qs-step{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:32px 28px;overflow:hidden;min-width:0}
 .qs-num{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--accent-dim);color:var(--accent);font-weight:700;font-size:.875rem;margin-bottom:16px}
 .qs-step h3{font-size:1.05rem;font-weight:700;margin-bottom:8px}
 .qs-step p{color:var(--text-2);font-size:.875rem;line-height:1.55;margin-bottom:16px}
-.qs-code{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:.8125rem;overflow-x:auto;white-space:pre;position:relative;line-height:1.6;max-width:100%}
+.qs-code{background:var(--bg);border:none;border-radius:0;padding:16px 20px;font-size:.8125rem;overflow-x:auto;white-space:pre;position:relative;line-height:1.6;max-width:100%}
 .qs-code .cmd{color:var(--accent)}
 .qs-code .dim{color:var(--text-3)}
 .qs-code .str{color:#34d399}
@@ -162,10 +165,13 @@ footer{border-top:1px solid var(--border);padding:32px 0;text-align:center;font-
 footer a{color:var(--text-2)}
 footer p{margin-bottom:6px}
 .sep{border:none;border-top:1px solid var(--border);margin:0}
-.copy-wrap{position:relative;overflow:hidden;max-width:100%}
-.copy-btn{position:absolute;top:6px;right:6px;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text-3);border-radius:6px;padding:4px 10px;font-size:.7rem;cursor:pointer;font-family:var(--sans);transition:all .15s;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:2}
-.copy-btn:hover{color:var(--text);border-color:var(--border-light);background:rgba(255,255,255,0.12)}
-.copy-btn.copied{color:var(--accent);border-color:var(--accent)}
+
+/* Terminal chrome */
+.copy-wrap{position:relative;border-radius:8px;overflow:hidden;background:var(--bg);border:1px solid var(--border)}
+.copy-wrap::before{content:'';display:block;height:32px;background:rgba(255,255,255,0.03);border-bottom:1px solid var(--border);position:relative;background-image:radial-gradient(circle at 16px 50%,#ef4444 4px,transparent 4px),radial-gradient(circle at 32px 50%,#f59e0b 4px,transparent 4px),radial-gradient(circle at 48px 50%,#22c55e 4px,transparent 4px)}
+.copy-btn{position:absolute;top:4px;right:8px;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text-3);border-radius:6px;padding:4px 12px;font-size:.7rem;cursor:pointer;font-family:var(--sans);transition:all .15s;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:2;line-height:1}
+.copy-btn:hover{color:var(--text);border-color:var(--border-light);background:rgba(255,255,255,0.10)}
+.copy-btn.copied{color:var(--green);border-color:var(--green)}
 
 @media(max-width:720px){
   .qs-steps,.features-grid,.eco-grid{grid-template-columns:1fr}
@@ -179,9 +185,7 @@ footer p{margin-bottom:6px}
   .mockup-body{padding:16px}
   .mock-cmd{font-size:.65rem}
   .qs-step{padding:20px 16px}
-  .copy-btn{padding:3px 7px;font-size:.625rem;min-width:36px;min-height:32px;border-radius:5px;top:4px;right:4px;opacity:.7}
-  .copy-btn:hover,.copy-btn:active{opacity:1}
-  .copy-btn.copied{opacity:1}
+  .copy-btn{display:none !important}
 }
 @media(max-width:480px){
   .hero h1{font-size:1.6rem}
@@ -197,7 +201,7 @@ footer p{margin-bottom:6px}
 *:focus-visible{outline:2px solid currentColor;outline-offset:2px}
 .skip-link{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:1000}
 .skip-link:focus{position:fixed;top:8px;left:8px;width:auto;height:auto;padding:12px 24px;background:var(--accent);color:#000;font-weight:700;font-size:.875rem;border-radius:8px;text-decoration:none;z-index:10000}
-.copy-btn{min-width:44px;min-height:36px;display:inline-flex;align-items:center;justify-content:center}
+.copy-btn{min-width:44px;min-height:24px;display:inline-flex;align-items:center;justify-content:center}
 .nav-links a{min-height:44px;display:inline-flex;align-items:center}
 </style>
 </head>
@@ -217,7 +221,7 @@ footer p{margin-bottom:6px}
       <a href="#what">About</a>
       <a href="#quickstart">Quick Start</a>
       <a href="#example">Dashboard</a>
-      <a href="https://github.com/grainulator/farmer" class="nav-cta">GitHub</a>
+      <a href="https://github.com/grainulator/farmer" class="nav-cta" aria-label="GitHub"><svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
     </div>
   </div>
 </nav>
@@ -226,12 +230,12 @@ footer p{margin-bottom:6px}
 
 <section class="hero">
   <div class="container">
-    <div class="hero-badge hf hf1">Part of the <strong style="color:#fff"><span style="color:#a78bfa">gr</span>ainulator</strong> ecosystem</div>
+    <div class="hero-badge hf hf1"><span style="color:#fff">Part of the </span><strong style="color:#fff"><span style="color:#a78bfa">gr</span>ainulator</strong> ecosystem</div>
     <h1 class="hf hf2">Your AI agent needs<br>permission to run tools.<br><em>You're not at your desk.</em></h1>
     <p class="hero-sub hf hf3">Farmer is a real-time permission dashboard for Claude Code. When your AI agent wants to run a command, edit a file, or access a resource, you see a card on your phone and tap Approve or Deny. One tap. From anywhere.</p>
     <div class="hero-actions hf hf4">
       <a href="#quickstart" class="btn btn-primary">
-        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
         Get started
       </a>
       <a href="#example" class="btn btn-ghost">See the dashboard</a>
@@ -245,7 +249,7 @@ footer p{margin-bottom:6px}
   <div class="container">
     <div class="what-box rv">
       <h2>What is <strong style="color:#fff"><span style="color:var(--accent)">f</span>armer</strong>?</h2>
-      <p>When you run an AI coding agent like Claude Code, it sometimes needs your permission before executing commands or editing files. Normally you have to be sitting at your terminal. Farmer gives you a web dashboard that streams permission requests in real time over WebSocket. You can approve or deny from your phone, a different browser tab, or even while you are in a meeting. Zero npm dependencies — it uses only Node built-ins.</p>
+      <p>When you run an AI coding agent like Claude Code, it sometimes needs your permission before executing commands or editing files. Normally you have to be sitting at your terminal. Farmer gives you a web dashboard that streams permission requests in real time over WebSocket. You can approve or deny from your phone, a different browser tab, or even while you are in a meeting. Zero external dependencies — standard library only.</p>
     </div>
   </div>
 </section>
@@ -364,7 +368,7 @@ requests a tool call. No polling delay.</div>
   <div class="container">
     <div class="section-label rv">Key features</div>
     <h2 class="section-title rv rv-d1">Control without context-switching</h2>
-    <p class="section-sub rv rv-d2">Zero npm dependencies. Node built-ins only. No framework, no build step.</p>
+    <p class="section-sub rv rv-d2">Zero external dependencies. Standard library only. No framework, no build step.</p>
 
     <div class="features-grid">
       <div class="feature-card rv rv-d1">
@@ -421,11 +425,11 @@ requests a tool call. No polling delay.</div>
     <div class="faq-grid">
       <div class="faq-item rv rv-d1">
         <h3>Do I need Node.js?</h3>
-        <p>Yes, Node 18 or later. But your project does not need to be JavaScript — Farmer works alongside any codebase.</p>
+        <p>Yes, Node 18 or later. But your project can use any language — Farmer works alongside any codebase.</p>
       </div>
       <div class="faq-item rv rv-d2">
         <h3>Does this only work with <strong style="color:#fff"><span style="color:#fbbf24">w</span>heat</strong>?</h3>
-        <p>No. Farmer works with any Claude Code session. It hooks into the tool-call permission system, which applies to all agents, not just wheat sprints.</p>
+        <p>No. Farmer works with any Claude Code session. It hooks into the tool-call permission system, which applies to all agents, not just <strong style="color:#fff"><span style="color:#fbbf24">w</span>heat</strong> sprints.</p>
       </div>
       <div class="faq-item rv rv-d3">
         <h3>Does this work with agents besides Claude Code?</h3>
@@ -433,7 +437,7 @@ requests a tool call. No polling delay.</div>
       </div>
       <div class="faq-item rv rv-d4">
         <h3>How do I access farmer from my phone?</h3>
-        <p>Farmer binds to localhost by default. To access it from your phone or another device, expose it via a tunnel (cloudflared, ngrok, tailscale) or bind to 0.0.0.0 to serve on your local network. Push notifications work via the built-in PWA — add the dashboard to your home screen for native-like alerts.</p>
+        <p><strong style="color:#fff"><span style="color:var(--accent)">f</span>armer</strong> binds to localhost by default. To access it from your phone or another device, expose it via a tunnel (cloudflared, ngrok, tailscale) or bind to 0.0.0.0 to serve on your local network. Push notifications work via the built-in PWA — add the dashboard to your home screen for native-like alerts.</p>
       </div>
     </div>
   </div>
@@ -443,14 +447,14 @@ requests a tool call. No polling delay.</div>
 
 <section class="ecosystem">
   <div class="container" style="text-align:center">
-    <div class="section-label rv">Part of <strong style="color:#fff"><span style="color:#a78bfa">gr</span>ainulator</strong></div>
+    <div class="section-label rv"><span style="color:#fff">Part of </span><strong style="color:#fff"><span style="color:#a78bfa">gr</span>ainulator</strong></div>
     <h2 class="section-title rv rv-d1">The ecosystem</h2>
     <p class="section-sub rv rv-d2" style="margin-left:auto;margin-right:auto">Farmer supervises AI agents running <strong style="color:#fff"><span style="color:#fbbf24">w</span>heat</strong> sprints — or any Claude Code session.</p>
     <div class="eco-grid rv rv-d3">
       <a href="https://grainulator.github.io/wheat/" class="eco-chip"><span class="eco-dot" style="background:#fbbf24"></span><span class="eco-name"><span style="color:#fbbf24">w</span>heat</span> research sprints</a>
       <a href="https://grainulator.github.io/farmer/" class="eco-chip current"><span class="eco-dot" style="background:#22c55e"></span><span class="eco-name"><span style="color:#22c55e">f</span>armer</span> permissions</a>
       <a href="https://grainulator.github.io/barn/" class="eco-chip"><span class="eco-dot" style="background:#ef4444"></span><span class="eco-name"><span style="color:#ef4444">b</span>arn</span> shared tools</a>
-      <a href="https://grainulator.github.io/mill/" class="eco-chip"><span class="eco-dot" style="background:#e2e8f0"></span><span class="eco-name"><span style="color:#e2e8f0">m</span>ill</span> export</a>
+      <a href="https://grainulator.github.io/mill/" class="eco-chip"><span class="eco-dot" style="background:#94a3b8"></span><span class="eco-name"><span style="color:#94a3b8">m</span>ill</span> export</a>
       <a href="https://grainulator.github.io/silo/" class="eco-chip"><span class="eco-dot" style="background:#60a5fa"></span><span class="eco-name"><span style="color:#60a5fa">s</span>ilo</span> knowledge packs</a>
       <a href="https://grainulator.github.io/harvest/" class="eco-chip"><span class="eco-dot" style="background:#f97316"></span><span class="eco-name"><span style="color:#f97316">h</span>arvest</span> analytics</a>
       <a href="https://grainulator.github.io/orchard/" class="eco-chip"><span class="eco-dot" style="background:#ec4899"></span><span class="eco-name"><span style="color:#ec4899">o</span>rchard</span> orchestration</a>
