@@ -24,6 +24,36 @@ function arg(name, fallback) {
 const dataDir = resolve(arg('data-dir', process.cwd()));
 const pidLock = new PidLock(join(dataDir, '.farmer.pid'));
 
+if (command === '--help' || command === '-h' || command === 'help') {
+  console.log(`Farmer — permission dashboard for AI coding agents
+
+Usage: farmer <command> [options]
+
+Commands:
+  start    Start the dashboard server (default)
+  stop     Stop a running instance
+  status   Check if Farmer is running
+
+Options (start):
+  --port <n>           Port to listen on (default: 9090)
+  --token <secret>     Auth token (auto-generated if omitted)
+  --trust-proxy        Trust X-Forwarded-For headers
+  --data-dir <path>    Directory for state/audit files (default: cwd)
+  --max-sessions <n>   Max concurrent sessions (default: 50)
+
+Examples:
+  farmer start --port 8080
+  farmer stop
+  farmer status`);
+  process.exit(0);
+}
+
+if (command === '--version' || command === '-v') {
+  const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+  console.log(`farmer v${pkg.version}`);
+  process.exit(0);
+}
+
 switch (command) {
   case 'start': {
     const server = new FarmerServer({
