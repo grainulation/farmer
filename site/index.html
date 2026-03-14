@@ -268,14 +268,15 @@ Open this URL on your phone or another tab.</div>
   <span class="key">"hooks"</span>: {
     <span class="key">"PreToolUse"</span>: [{
       <span class="key">"type"</span>: <span class="str">"command"</span>,
-      <span class="key">"command"</span>: <span class="str">"curl ..."</span>
+      <span class="key">"command"</span>: <span class="str">"curl -sf -X POST -H 'Content-Type: application/json' -d \"$(cat)\" http://localhost:9090/hooks/permission"</span>
     }]
   }
 }</code></pre>
-          <button class="copy-btn" onclick="copyText(this,'See docs for full hook config')">Copy</button>
+          <button class="copy-btn" onclick="copyText(this,'{\n  &quot;hooks&quot;: {\n    &quot;PreToolUse&quot;: [{\n      &quot;type&quot;: &quot;command&quot;,\n      &quot;command&quot;: &quot;curl -sf -X POST -H \'Content-Type: application/json\' -d \\&quot;$(cat)\\&quot; http://localhost:9090/hooks/permission&quot;\n    }]\n  }\n}')">Copy</button>
         </div>
-        <div class="qs-output">Hooks intercept tool calls before they
-execute and route them to Farmer.</div>
+        <div class="qs-output">Add this to .claude/settings.json. Hooks
+intercept tool calls before execution and
+route them to Farmer for approval.</div>
       </div>
       <div class="qs-step rv rv-d3">
         <div class="qs-num">3</div>
