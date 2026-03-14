@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>farmer -- Approve AI agent tool calls from anywhere</title>
+<title>farmer — Approve AI agent tool calls from anywhere</title>
 <meta name="description" content="Your AI agent needs permission to run tools. You are not at your desk. Farmer gives you a real-time dashboard to approve, deny, or review from your phone.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="farmer -- Approve AI agent tool calls from anywhere">
+<meta property="og:title" content="farmer — Approve AI agent tool calls from anywhere">
 <meta property="og:description" content="Your AI agent needs permission to run tools. You are not at your desk. Farmer gives you a real-time dashboard to approve, deny, or review from your phone.">
 <meta property="og:url" content="https://grainulator.github.io/farmer/">
 <meta property="og:image" content="https://grainulator.github.io/farmer/og-image.svg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="farmer -- Approve AI agent tool calls from anywhere">
+<meta name="twitter:title" content="farmer — Approve AI agent tool calls from anywhere">
 <meta name="twitter:description" content="Your AI agent needs permission to run tools. You are not at your desk. Farmer lets you approve from your phone.">
 <link rel="canonical" href="https://grainulator.github.io/farmer/">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%2309090b'/><text x='32' y='48' text-anchor='middle' font-family='system-ui,sans-serif' font-weight='800' font-size='44' fill='%2322c55e'>f</text></svg>">
@@ -163,8 +163,8 @@ footer a{color:var(--text-2)}
 footer p{margin-bottom:6px}
 .sep{border:none;border-top:1px solid var(--border);margin:0}
 .copy-wrap{position:relative;overflow:hidden;max-width:100%}
-.copy-btn{position:absolute;top:8px;right:8px;background:var(--surface-hover);border:1px solid var(--border);color:var(--text-3);border-radius:6px;padding:4px 10px;font-size:.7rem;cursor:pointer;font-family:var(--sans);transition:all .15s}
-.copy-btn:hover{color:var(--text);border-color:var(--border-light)}
+.copy-btn{position:absolute;top:6px;right:6px;background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text-3);border-radius:6px;padding:4px 10px;font-size:.7rem;cursor:pointer;font-family:var(--sans);transition:all .15s;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:2}
+.copy-btn:hover{color:var(--text);border-color:var(--border-light);background:rgba(255,255,255,0.12)}
 .copy-btn.copied{color:var(--accent);border-color:var(--accent)}
 
 @media(max-width:720px){
@@ -179,7 +179,9 @@ footer p{margin-bottom:6px}
   .mockup-body{padding:16px}
   .mock-cmd{font-size:.65rem}
   .qs-step{padding:20px 16px}
-  .copy-btn{position:static;margin-top:8px;width:auto}
+  .copy-btn{padding:3px 7px;font-size:.625rem;min-width:36px;min-height:32px;border-radius:5px;top:4px;right:4px;opacity:.7}
+  .copy-btn:hover,.copy-btn:active{opacity:1}
+  .copy-btn.copied{opacity:1}
 }
 @media(max-width:480px){
   .hero h1{font-size:1.6rem}
@@ -195,7 +197,7 @@ footer p{margin-bottom:6px}
 *:focus-visible{outline:2px solid currentColor;outline-offset:2px}
 .skip-link{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:1000}
 .skip-link:focus{position:fixed;top:8px;left:8px;width:auto;height:auto;padding:12px 24px;background:var(--accent);color:#000;font-weight:700;font-size:.875rem;border-radius:8px;text-decoration:none;z-index:10000}
-.copy-btn{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+.copy-btn{min-width:44px;min-height:36px;display:inline-flex;align-items:center;justify-content:center}
 .nav-links a{min-height:44px;display:inline-flex;align-items:center}
 </style>
 </head>
@@ -243,7 +245,7 @@ footer p{margin-bottom:6px}
   <div class="container">
     <div class="what-box rv">
       <h2>What is <strong style="color:#fff"><span style="color:var(--accent)">f</span>armer</strong>?</h2>
-      <p>When you run an AI coding agent like Claude Code, it sometimes needs your permission before executing commands or editing files. Normally you have to be sitting at your terminal. Farmer gives you a web dashboard that streams permission requests in real time over WebSocket. You can approve or deny from your phone, a different browser tab, or even while you are in a meeting. Zero npm dependencies -- it uses only Node built-ins.</p>
+      <p>When you run an AI coding agent like Claude Code, it sometimes needs your permission before executing commands or editing files. Normally you have to be sitting at your terminal. Farmer gives you a web dashboard that streams permission requests in real time over WebSocket. You can approve or deny from your phone, a different browser tab, or even while you are in a meeting. Zero npm dependencies — it uses only Node built-ins.</p>
     </div>
   </div>
 </section>
@@ -252,7 +254,7 @@ footer p{margin-bottom:6px}
 
 <section class="quickstart" id="quickstart">
   <div class="container">
-    <div class="qs-label rv">Quick start -- 3 steps</div>
+    <div class="qs-label rv">Quick start — 3 steps</div>
     <div class="qs-steps">
       <div class="qs-step rv rv-d1">
         <div class="qs-num">1</div>
@@ -419,7 +421,7 @@ requests a tool call. No polling delay.</div>
     <div class="faq-grid">
       <div class="faq-item rv rv-d1">
         <h3>Do I need Node.js?</h3>
-        <p>Yes, Node 18 or later. But your project does not need to be JavaScript -- Farmer works alongside any codebase.</p>
+        <p>Yes, Node 18 or later. But your project does not need to be JavaScript — Farmer works alongside any codebase.</p>
       </div>
       <div class="faq-item rv rv-d2">
         <h3>Does this only work with <strong style="color:#fff"><span style="color:#fbbf24">w</span>heat</strong>?</h3>
@@ -431,7 +433,7 @@ requests a tool call. No polling delay.</div>
       </div>
       <div class="faq-item rv rv-d4">
         <h3>How do I access farmer from my phone?</h3>
-        <p>Farmer binds to localhost by default. To access it from your phone or another device, expose it via a tunnel (cloudflared, ngrok, tailscale) or bind to 0.0.0.0 to serve on your local network. Push notifications work via the built-in PWA -- add the dashboard to your home screen for native-like alerts.</p>
+        <p>Farmer binds to localhost by default. To access it from your phone or another device, expose it via a tunnel (cloudflared, ngrok, tailscale) or bind to 0.0.0.0 to serve on your local network. Push notifications work via the built-in PWA — add the dashboard to your home screen for native-like alerts.</p>
       </div>
     </div>
   </div>
@@ -443,7 +445,7 @@ requests a tool call. No polling delay.</div>
   <div class="container" style="text-align:center">
     <div class="section-label rv">Part of <strong style="color:#fff"><span style="color:#a78bfa">gr</span>ainulator</strong></div>
     <h2 class="section-title rv rv-d1">The ecosystem</h2>
-    <p class="section-sub rv rv-d2" style="margin-left:auto;margin-right:auto">Farmer supervises AI agents running <strong style="color:#fff"><span style="color:#fbbf24">w</span>heat</strong> sprints -- or any Claude Code session.</p>
+    <p class="section-sub rv rv-d2" style="margin-left:auto;margin-right:auto">Farmer supervises AI agents running <strong style="color:#fff"><span style="color:#fbbf24">w</span>heat</strong> sprints — or any Claude Code session.</p>
     <div class="eco-grid rv rv-d3">
       <a href="https://grainulator.github.io/wheat/" class="eco-chip"><span class="eco-dot" style="background:#fbbf24"></span><span class="eco-name"><span style="color:#fbbf24">w</span>heat</span> research sprints</a>
       <a href="https://grainulator.github.io/farmer/" class="eco-chip current"><span class="eco-dot" style="background:#22c55e"></span><span class="eco-name"><span style="color:#22c55e">f</span>armer</span> permissions</a>
@@ -462,7 +464,7 @@ requests a tool call. No polling delay.</div>
 <footer>
   <div class="container">
     <p>Part of the <a href="https://grainulator.github.io/grainulator/"><strong style="color:#fff"><span style="color:#a78bfa">gr</span>ainulator</strong></a> ecosystem</p>
-    <p><strong style="color:#fff"><span style="color:#22c55e">f</span>armer</strong> -- <a href="https://github.com/grainulator/farmer">GitHub</a> -- <a href="https://github.com/grainulator/farmer#readme">Docs</a></p>
+    <p><strong style="color:#fff"><span style="color:#22c55e">f</span>armer</strong> — <a href="https://github.com/grainulator/farmer">GitHub</a> — <a href="https://github.com/grainulator/farmer#readme">Docs</a></p>
   </div>
 </footer>
 
@@ -476,9 +478,10 @@ document.querySelectorAll('.rv').forEach(el => obs.observe(el));
 
 function copyText(btn, text) {
   navigator.clipboard.writeText(text).then(() => {
-    btn.textContent = 'Copied';
+    var w = window.innerWidth;
+    btn.textContent = w <= 720 ? '\u2713' : 'Copied';
     btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1200);
   });
 }
 
