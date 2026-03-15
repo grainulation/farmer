@@ -439,6 +439,76 @@
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+
+  /* ── Command Palette ── */
+  .cmd-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: flex-start; justify-content: center;
+    padding-top: 120px;
+  }
+  .cmd-overlay.open { display: flex; }
+  .cmd-palette {
+    width: 520px; max-height: 420px;
+    background: #1a1f2e;
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    overflow: hidden; display: flex; flex-direction: column;
+  }
+  .cmd-input-wrap {
+    display: flex; align-items: center;
+    padding: 12px 16px; gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .cmd-input-icon { color: var(--dim); font-size: 16px; flex-shrink: 0; }
+  .cmd-input {
+    flex: 1; background: none; border: none;
+    color: var(--text); font-size: 14px; font-family: inherit; outline: none;
+  }
+  .cmd-input::placeholder { color: var(--dim); }
+  .cmd-results {
+    overflow-y: auto; max-height: 340px; padding: 4px 0;
+  }
+  .cmd-results::-webkit-scrollbar { width: 4px; }
+  .cmd-results::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 2px; }
+  .cmd-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 16px; cursor: pointer; transition: background 0.05s;
+  }
+  .cmd-item:hover, .cmd-item.selected { background: rgba(59,130,246,0.1); }
+  .cmd-item-icon { width: 20px; text-align: center; color: var(--dim); font-size: 13px; }
+  .cmd-item-label { flex: 1; font-size: 13px; color: var(--text); }
+  .cmd-item-hint {
+    font-size: 11px; color: var(--dim); font-family: 'SF Mono', monospace;
+    background: var(--bg3); padding: 1px 6px; border-radius: 3px;
+    border: 1px solid var(--border);
+  }
+  .cmd-item-category {
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--dim); padding: 0 4px;
+  }
+  .cmd-empty { padding: 20px; text-align: center; color: var(--dim); font-size: 12px; }
+
+  /* ── Session indicators on permission cards ── */
+  .perm-session-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    display: inline-block; flex-shrink: 0;
+  }
+  .perm-session-id {
+    font-size: 10px; font-family: 'SF Mono', monospace;
+    color: var(--dim); margin-left: 2px;
+  }
+
+  /* ── Virtual scroll container ── */
+  .vscroll-viewport {
+    position: relative; overflow-y: auto;
+    scrollbar-width: thin; scrollbar-color: var(--bg3) transparent;
+  }
+  .vscroll-spacer { width: 100%; }
+  .vscroll-content { position: relative; }
 </style>
 </head>
 <body>
@@ -549,7 +619,19 @@
     <div class="shortcut-row"><span class="shortcut-label">Switch to Claims</span><span class="shortcut-key">3</span></div>
     <div class="shortcut-row"><span class="shortcut-label">Switch to Settings</span><span class="shortcut-key">4</span></div>
     <div class="shortcut-row"><span class="shortcut-label">Deselect / close detail</span><span class="shortcut-key">Esc</span></div>
+    <div class="shortcut-row"><span class="shortcut-label">Command palette</span><span class="shortcut-key">&8984;K</span></div>
     <div class="shortcut-row"><span class="shortcut-label">Show this help</span><span class="shortcut-key">?</span></div>
+  </div>
+</div>
+
+<!-- Command Palette -->
+<div class="cmd-overlay" id="cmdOverlay" onclick="if(event.target===this)closePalette()">
+  <div class="cmd-palette">
+    <div class="cmd-input-wrap">
+      <span class="cmd-input-icon">&#x2318;</span>
+      <input class="cmd-input" id="cmdInput" type="text" placeholder="Search actions, permissions, claims..." autocomplete="off" spellcheck="false">
+    </div>
+    <div class="cmd-results" id="cmdResults"></div>
   </div>
 </div>
 
@@ -769,6 +851,8 @@ function renderPermissions() {
     const session = state.sessions.find(s => s.id === p.session_id);
     const sessionColor = session?.color || p.session_color || 200;
     const sessionLabel = session?.label || p.session_label || p.session_id?.slice(0,6) || '?';
+    const sessionDotColor = getSessionColor(p.session_id);
+    const sessionIdPrefix = p.session_id ? p.session_id.slice(0, 6) : '';
     const timeStr = p.timestamp ? new Date(p.timestamp).toLocaleTimeString() : '';
 
     let actionsHtml;
@@ -792,7 +876,9 @@ function renderPermissions() {
     return `<div class="perm-card ${cardClass}${selClass}" onclick="selectPerm(${i})">
       <div class="perm-header">
         <span class="perm-tool">${esc(p.tool_name)}</span>
+        <span class="perm-session-dot" style="background:${sessionDotColor}"></span>
         <span class="perm-session-tag" style="background:hsl(${sessionColor},50%,40%)">${esc(sessionLabel)}</span>
+        <span class="perm-session-id">${esc(sessionIdPrefix)}</span>
         <span class="perm-time">${timeStr}</span>
       </div>
       <div class="perm-body">${esc(inputStr)}</div>
@@ -986,6 +1072,224 @@ function notifySound() {
   } catch {}
 }
 
+// ── Session color palette (5 distinct colors, cycles) ──
+const SESSION_COLORS = ['#3b82f6', '#22c55e', '#f59e0b', '#a78bfa', '#ef4444'];
+function getSessionColor(sessionId) {
+  if (!sessionId) return SESSION_COLORS[0];
+  const sessions = state.sessions || [];
+  const idx = sessions.findIndex(s => s.id === sessionId);
+  return SESSION_COLORS[(idx >= 0 ? idx : 0) % SESSION_COLORS.length];
+}
+
+// ── Command Palette ──
+let cmdOpen = false;
+let cmdSelectedIdx = 0;
+let _filteredCmds = [];
+
+function buildPaletteCommands() {
+  const cmds = [];
+  const pending = getFilteredPending();
+
+  // Actions on selected permission
+  if (pending.length > 0 && selectedPermIdx >= 0 && selectedPermIdx < pending.length) {
+    const p = pending[selectedPermIdx];
+    const isQ = p.isQuestion || p.tool_name === 'AskUserQuestion' || p.tool_name === 'Request';
+    if (!isQ) {
+      cmds.push({ label: 'Approve selected permission', hint: 'a', icon: '\u2713', cat: 'action', action() { decide(p.requestId, true); } });
+      cmds.push({ label: 'Deny selected permission', hint: 'd', icon: '\u2717', cat: 'action', action() { decide(p.requestId, false); } });
+    }
+  }
+
+  // Bulk action
+  if (pending.length > 1) {
+    cmds.push({ label: 'Approve all pending (' + pending.length + ')', hint: '', icon: '\u2713\u2713', cat: 'action', action() {
+      pending.forEach(p => {
+        const isQ = p.isQuestion || p.tool_name === 'AskUserQuestion' || p.tool_name === 'Request';
+        if (!isQ) decide(p.requestId, true);
+      });
+    }});
+  }
+
+  // Tab switching
+  const panes = [
+    { name: 'permissions', label: 'Permissions', hint: '1', icon: '\u25A0' },
+    { name: 'messages', label: 'Messages', hint: '2', icon: '\u2709' },
+    { name: 'claims', label: 'Claims', hint: '3', icon: '\u25C6' },
+    { name: 'settings', label: 'Settings', hint: '4', icon: '\u2699' },
+  ];
+  panes.forEach(p => {
+    cmds.push({ label: 'Go to ' + p.label, hint: p.hint, icon: p.icon, cat: 'navigate', action() {
+      const tabs = document.querySelectorAll('.pane-tab');
+      const idx = panes.findIndex(x => x.name === p.name);
+      switchPane(p.name, tabs[idx]);
+    }});
+  });
+
+  // Sessions
+  (state.sessions || []).forEach(s => {
+    cmds.push({
+      label: 'Session: ' + (s.label || s.id.slice(0, 12)),
+      hint: '', icon: '\u25C9', cat: 'session',
+      action() { selectSession(s.id); }
+    });
+  });
+
+  // Claims search entries
+  const allClaims = state.claims?.claims || [];
+  allClaims.forEach(c => {
+    if (c.status === 'superseded') return;
+    cmds.push({
+      label: c.id + ' ' + (c.content || '').slice(0, 80),
+      hint: c.type || '', icon: '\u25C6', cat: 'claim',
+      action() {
+        // Switch to claims tab and select this claim
+        const tabs = document.querySelectorAll('.pane-tab');
+        switchPane('claims', tabs[2]);
+        selectedClaimId = c.id;
+        renderClaims();
+        // Try to show detail
+        setTimeout(() => {
+          const row = document.querySelector(`[data-claim-id="${c.id}"]`);
+          if (row) { showClaimDetail(row); row.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+        }, 50);
+      }
+    });
+  });
+
+  // Permission entries (searchable by tool name / content)
+  pending.forEach((p, i) => {
+    cmds.push({
+      label: p.tool_name + ': ' + formatToolInput(p.tool_name, p.tool_input).slice(0, 60),
+      hint: '', icon: '\u25A0', cat: 'permission',
+      action() {
+        const tabs = document.querySelectorAll('.pane-tab');
+        switchPane('permissions', tabs[0]);
+        selectedPermIdx = i;
+        renderPermissions();
+        scrollToSelectedPerm();
+      }
+    });
+  });
+
+  // Trust levels
+  ['paranoid', 'standard', 'autonomous'].forEach(level => {
+    cmds.push({ label: 'Set trust: ' + level, hint: '', icon: '\u26A0', cat: 'setting', action() { setTrust(level); } });
+  });
+
+  // Meta
+  cmds.push({ label: 'Show keyboard shortcuts', hint: '?', icon: '\u2328', cat: 'help', action() { toggleShortcuts(); } });
+
+  return cmds;
+}
+
+function openPalette() {
+  cmdOpen = true;
+  cmdSelectedIdx = 0;
+  document.getElementById('cmdOverlay').classList.add('open');
+  const input = document.getElementById('cmdInput');
+  input.value = '';
+  input.focus();
+  renderPaletteResults('');
+}
+
+function closePalette() {
+  cmdOpen = false;
+  document.getElementById('cmdOverlay').classList.remove('open');
+}
+
+function renderPaletteResults(query) {
+  const cmds = buildPaletteCommands();
+  const q = query.toLowerCase();
+  const filtered = q
+    ? cmds.filter(c => c.label.toLowerCase().includes(q) || (c.cat && c.cat.includes(q)) || (c.hint && c.hint.toLowerCase().includes(q)))
+    : cmds.filter(c => c.cat !== 'claim' && c.cat !== 'permission'); // Only show claims/perms when actively searching
+
+  if (filtered.length === 0) {
+    document.getElementById('cmdResults').innerHTML = '<div class="cmd-empty">No matching commands</div>';
+    _filteredCmds = [];
+    return;
+  }
+
+  if (cmdSelectedIdx >= filtered.length) cmdSelectedIdx = filtered.length - 1;
+  if (cmdSelectedIdx < 0) cmdSelectedIdx = 0;
+
+  let html = '';
+  let lastCat = '';
+  filtered.forEach((cmd, i) => {
+    if (cmd.cat !== lastCat && !q) {
+      lastCat = cmd.cat;
+      const catLabels = { action: 'Actions', navigate: 'Navigation', session: 'Sessions', claim: 'Claims', permission: 'Permissions', setting: 'Settings', help: 'Help' };
+      html += `<div class="cmd-item-category" style="padding:8px 16px 2px">${catLabels[cmd.cat] || cmd.cat}</div>`;
+    }
+    html += `<div class="cmd-item${i === cmdSelectedIdx ? ' selected' : ''}" data-cmd-idx="${i}">
+      <span class="cmd-item-icon">${esc(cmd.icon)}</span>
+      <span class="cmd-item-label">${esc(cmd.label)}</span>
+      ${cmd.hint ? `<span class="cmd-item-hint">${esc(cmd.hint)}</span>` : ''}
+    </div>`;
+  });
+
+  document.getElementById('cmdResults').innerHTML = html;
+  _filteredCmds = filtered;
+
+  // Attach click handlers
+  document.querySelectorAll('#cmdResults .cmd-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const idx = parseInt(item.getAttribute('data-cmd-idx'), 10);
+      closePalette();
+      if (_filteredCmds[idx]) _filteredCmds[idx].action();
+    });
+  });
+
+  // Scroll selected into view
+  const selectedEl = document.querySelector('#cmdResults .cmd-item.selected');
+  if (selectedEl) selectedEl.scrollIntoView({ block: 'nearest' });
+}
+
+// Command palette input handler
+document.addEventListener('DOMContentLoaded', () => {
+  const cmdInput = document.getElementById('cmdInput');
+  if (cmdInput) {
+    cmdInput.addEventListener('input', (e) => {
+      cmdSelectedIdx = 0;
+      renderPaletteResults(e.target.value);
+    });
+  }
+});
+
+// ── Virtual Scrolling ──
+const VSCROLL_THRESHOLD = 100;
+const VSCROLL_ITEM_HEIGHT = 37; // approx height of a claim-row or perm-card
+const VSCROLL_BUFFER = 20; // extra items above/below viewport
+
+function setupVirtualScroll(containerEl, items, renderItem, itemHeight) {
+  if (items.length <= VSCROLL_THRESHOLD) {
+    // Below threshold: render all normally
+    containerEl.className = containerEl.className.replace(/\bvscroll-viewport\b/, '').trim();
+    containerEl.innerHTML = items.map(renderItem).join('');
+    return null;
+  }
+
+  containerEl.classList.add('vscroll-viewport');
+  const totalHeight = items.length * itemHeight;
+  containerEl.innerHTML = `<div class="vscroll-spacer" style="height:${totalHeight}px"><div class="vscroll-content" id="vscroll-${containerEl.id}"></div></div>`;
+
+  const contentEl = document.getElementById('vscroll-' + containerEl.id);
+
+  function renderWindow() {
+    const scrollTop = containerEl.scrollTop;
+    const viewportH = containerEl.clientHeight;
+    const startIdx = Math.max(0, Math.floor(scrollTop / itemHeight) - VSCROLL_BUFFER);
+    const endIdx = Math.min(items.length, Math.ceil((scrollTop + viewportH) / itemHeight) + VSCROLL_BUFFER);
+    const slice = items.slice(startIdx, endIdx);
+    contentEl.style.transform = `translateY(${startIdx * itemHeight}px)`;
+    contentEl.innerHTML = slice.map((item, i) => renderItem(item, startIdx + i)).join('');
+  }
+
+  renderWindow();
+  containerEl.addEventListener('scroll', renderWindow, { passive: true });
+  return { refresh: renderWindow };
+}
+
 // ── Claims ──
 let claimsFilter = { type: null };
 
@@ -1018,22 +1322,33 @@ function renderClaims() {
   const status = comp?.status || 'unknown';
   const hash = comp?.claims_hash || '—';
 
-  document.getElementById('claimsList').innerHTML =
-    `<div class="claims-summary"><span><strong>${active}</strong> active / ${allClaims.length} total</span><span>status: <strong>${status}</strong></span><span>hash: ${hash}</span></div>` +
-    claims.map(c => {
-      const sup = c.status === 'superseded' ? ' superseded' : '';
-      const sel = selectedClaimId === c.id ? ' selected' : '';
-      const dataAttr = esc(JSON.stringify(c));
-      return `<div class="claim-row${sup}${sel}" title="${esc(c.content)}" data-claim-id="${c.id}" onclick="showClaimDetail(this)">
-        <span class="claim-id">${c.id}</span>
-        <span class="claim-type ${c.type}">${c.type}</span>
-        <span class="claim-content">${esc(c.content)}</span>
-        <span class="claim-evidence">${c.evidence}</span>
-      </div>`;
-    }).join('') || '<div class="empty-state" style="padding:16px;font-size:12px">No claims match filter</div>';
+  const summaryHtml = `<div class="claims-summary"><span><strong>${active}</strong> active / ${allClaims.length} total</span><span>status: <strong>${status}</strong></span><span>hash: ${hash}</span></div>`;
+
+  const listEl = document.getElementById('claimsList');
+
+  function renderClaimRow(c) {
+    const sup = c.status === 'superseded' ? ' superseded' : '';
+    const sel = selectedClaimId === c.id ? ' selected' : '';
+    return `<div class="claim-row${sup}${sel}" title="${esc(c.content)}" data-claim-id="${c.id}" onclick="showClaimDetail(this)">
+      <span class="claim-id">${c.id}</span>
+      <span class="claim-type ${c.type}">${c.type}</span>
+      <span class="claim-content">${esc(c.content)}</span>
+      <span class="claim-evidence">${c.evidence}</span>
+    </div>`;
+  }
+
+  if (claims.length === 0) {
+    listEl.innerHTML = summaryHtml + '<div class="empty-state" style="padding:16px;font-size:12px">No claims match filter</div>';
+  } else if (claims.length > VSCROLL_THRESHOLD) {
+    // Virtual scrolling for large sets
+    listEl.innerHTML = summaryHtml + '<div id="claimsVscrollContainer" style="flex:1;overflow-y:auto;position:relative"></div>';
+    const vContainer = document.getElementById('claimsVscrollContainer');
+    setupVirtualScroll(vContainer, claims, renderClaimRow, VSCROLL_ITEM_HEIGHT);
+  } else {
+    listEl.innerHTML = summaryHtml + claims.map(renderClaimRow).join('');
+  }
 
   // Append inline detail container for narrow viewports
-  const listEl = document.getElementById('claimsList');
   if (!document.getElementById('claimDetailInline')) {
     listEl.insertAdjacentHTML('beforeend', '<div class="claim-detail-inline" id="claimDetailInline"></div>');
   }
@@ -1192,6 +1507,22 @@ function buildClaimDetailHtml(c) {
     </div>`;
   }
 
+  if (c.session_id) {
+    const session = (state.sessions || []).find(s => s.id === c.session_id);
+    const dotColor = getSessionColor(c.session_id);
+    const sLabel = session?.label || c.session_id.slice(0, 12);
+    const sStatus = session?.status || 'unknown';
+    h += `<div class="detail-section">
+      <div class="detail-label">Session</div>
+      <div class="detail-value">
+        <span class="perm-session-dot" style="background:${dotColor};vertical-align:middle"></span>
+        <strong>${esc(sLabel)}</strong>
+        <span style="color:var(--dim)"> (${esc(c.session_id)})</span>
+        <br><span style="font-size:11px;color:var(--dim)">Status: ${esc(sStatus)}${session?.trust ? ' &middot; Trust: ' + esc(session.trust) : ''}</span>
+      </div>
+    </div>`;
+  }
+
   // Raw JSON
   h += `<div class="detail-section">
     <div class="detail-label">Raw</div>
@@ -1208,6 +1539,39 @@ function toggleShortcuts() {
 
 // ── Keyboard handler ──
 document.addEventListener('keydown', function(e) {
+  // Command palette navigation (must come first, consumes keys when open)
+  if (cmdOpen) {
+    if (e.key === 'Escape') { closePalette(); e.preventDefault(); return; }
+    if (e.key === 'ArrowDown') {
+      cmdSelectedIdx = Math.min(cmdSelectedIdx + 1, (_filteredCmds.length || 1) - 1);
+      renderPaletteResults(document.getElementById('cmdInput').value);
+      e.preventDefault();
+      return;
+    }
+    if (e.key === 'ArrowUp') {
+      cmdSelectedIdx = Math.max(cmdSelectedIdx - 1, 0);
+      renderPaletteResults(document.getElementById('cmdInput').value);
+      e.preventDefault();
+      return;
+    }
+    if (e.key === 'Enter') {
+      if (_filteredCmds && _filteredCmds[cmdSelectedIdx]) {
+        closePalette();
+        _filteredCmds[cmdSelectedIdx].action();
+      }
+      e.preventDefault();
+      return;
+    }
+    return; // Let other keys pass through to the input
+  }
+
+  // Cmd/Ctrl+K -- open command palette (works even when in inputs)
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    openPalette();
+    return;
+  }
+
   // Don't intercept when typing in inputs
   const tag = e.target.tagName;
   if (tag === 'INPUT' || tag === 'TEXTAREA') return;
