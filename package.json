@@ -1,5 +1,5 @@
 {
-  "name": "@grainulator/farmer",
+  "name": "@grainulation/farmer",
   "version": "0.1.0",
   "description": "Desktop-first permission dashboard for AI coding agents",
   "type": "module",
@@ -33,7 +33,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/grainulator/farmer"
+    "url": "https://github.com/grainulation/farmer"
   },
-  "author": "grainulator contributors"
+  "author": "grainulation contributors"
 }

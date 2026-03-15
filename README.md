@@ -1,4 +1,4 @@
-# @grainulator/farmer
+# @grainulation/farmer
 
 Desktop-first permission dashboard for AI coding agents.
 
@@ -59,7 +59,7 @@ See `docs/hook-protocol.md` for the full specification.
 To support a new AI agent, extend `BaseAdapter` in `lib/adapters/base.js`:
 
 ```js
-import { BaseAdapter } from '@grainulator/farmer/lib/adapters/base.js';
+import { BaseAdapter } from '@grainulation/farmer/lib/adapters/base.js';
 
 class MyAgentAdapter extends BaseAdapter {
   get name() { return 'My Agent'; }

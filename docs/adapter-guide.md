@@ -90,7 +90,7 @@ See `lib/adapters/claude-code.js` for the reference implementation. Key behavior
 Pass your adapter when creating the server:
 
 ```js
-import { FarmerServer } from '@grainulator/farmer/lib/server.js';
+import { FarmerServer } from '@grainulation/farmer/lib/server.js';
 import { MyAdapter } from './my-adapter.js';
 
 const server = new FarmerServer({
