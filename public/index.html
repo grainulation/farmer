@@ -329,6 +329,21 @@
     box-shadow: 0 0 0 1px var(--accent), 0 0 12px rgba(59,130,246,0.15);
   }
 
+  /* ── Feedback box ── */
+  .feedback-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+  .feedback-box .fb-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--dim); margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+  .feedback-box .fb-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+  .feedback-box textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 13px; padding: 10px; resize: none; min-height: 50px; font-family: inherit; outline: none; }
+  .feedback-box textarea:focus { border-color: var(--accent); }
+  .feedback-box .fb-send { margin-top: 6px; width: 100%; padding: 8px; border: none; border-radius: 6px; background: var(--accent); color: white; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .feedback-box .fb-send:disabled { opacity: 0.4; }
+  .feedback-box.fb-pending { border-color: var(--orange); }
+  .feedback-box.fb-pending textarea, .feedback-box.fb-pending .fb-send { display: none; }
+  .fb-pending-msg { font-size: 12px; color: var(--orange); display: flex; align-items: center; gap: 6px; }
+  .fb-spinner { width: 12px; height: 12px; border: 2px solid var(--orange); border-top-color: transparent; border-radius: 50%; animation: fbspin 0.8s linear infinite; }
+  @keyframes fbspin { to { transform: rotate(360deg); } }
+  .fb-sent-text { font-size: 11px; color: var(--dim); margin-top: 4px; }
+
   /* ── Three-column layout (claim detail panel) ── */
   @media (min-width: 1201px) {
     :root { --detail-w: 340px; }
@@ -640,6 +655,8 @@
 const TOKEN = '{{TOKEN}}';
 let csrfToken = '';
 let state = { pending: [], activity: [], sessions: [], trustLevel: 'paranoid', sessionRules: [], messages: [] };
+let feedbackPending = false;
+let feedbackSent = null;
 let selectedSession = null; // null = all sessions
 let selectedPermIdx = -1;
 let selectedClaimId = null;
@@ -680,8 +697,19 @@ function setConn(ok) {
 }
 
 // ── Message handler ──
+// Guard: don't nuke DOM if user is typing in a textarea/input
+function isUserTyping() {
+  const f = document.activeElement;
+  return f && (f.tagName === 'TEXTAREA' || f.tagName === 'INPUT');
+}
+
 function handleMessage(msg) {
   switch (msg.type) {
+    case 'feedback_read':
+      if (typeof feedbackPending !== 'undefined') { feedbackPending = false; feedbackSent = null; }
+      if (!isUserTyping()) renderPermissions();
+      break;
+
     case 'init':
       csrfToken = msg.data.csrfToken || '';
       state.pending = msg.data.pending || [];
@@ -691,13 +719,12 @@ function handleMessage(msg) {
       state.sessionRules = msg.data.sessionRules || [];
       state.claims = msg.data.claims || null;
       state.compilation = msg.data.compilation || null;
-      renderAll();
+      if (!isUserTyping()) renderAll();
       break;
 
     case 'permission_request':
       state.pending.push(msg.data);
-      renderPermissions();
-      renderSessions();
+      if (!isUserTyping()) { renderPermissions(); renderSessions(); }
       notifySound();
       break;
 
@@ -705,8 +732,7 @@ function handleMessage(msg) {
     case 'permission_expired': {
       const idx = state.pending.findIndex(p => p.requestId === (msg.data.requestId || msg.data.id));
       if (idx !== -1) state.pending.splice(idx, 1);
-      renderPermissions();
-      renderSessions();
+      if (!isUserTyping()) { renderPermissions(); renderSessions(); }
       break;
     }
 
@@ -827,6 +853,34 @@ function renderSessions() {
   }).join('');
 }
 
+function renderFeedbackBox() {
+  if (feedbackPending) {
+    return `<div class="feedback-box fb-pending">
+      <div class="fb-label"><span class="fb-dot" style="background:var(--orange)"></span> Feedback sent</div>
+      <div class="fb-pending-msg"><span class="fb-spinner"></span> Waiting for Claude to read...</div>
+      <div class="fb-sent-text">${esc(feedbackSent?.text || '')}</div>
+    </div>`;
+  }
+  return `<div class="feedback-box">
+    <div class="fb-label"><span class="fb-dot"></span> Send feedback to Claude</div>
+    <textarea id="feedbackInput" placeholder="e.g. found a bug, noticed an issue, btw..."></textarea>
+    <button class="fb-send" onclick="sendFeedback()">Send</button>
+  </div>`;
+}
+
+async function sendFeedback() {
+  const input = document.getElementById('feedbackInput');
+  if (!input || !input.value.trim()) return;
+  feedbackSent = { text: input.value.trim(), timestamp: Date.now() };
+  feedbackPending = true;
+  renderPermissions();
+  try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (csrfToken) headers['X-CSRF-Token'] = csrfToken;
+    await fetch('/api/feedback', { method: 'POST', headers, body: JSON.stringify({ content: feedbackSent.text }), credentials: 'include' });
+  } catch {}
+}
+
 function renderPermissions() {
   const el = document.getElementById('permList');
   const filtered = selectedSession
@@ -838,12 +892,14 @@ function renderPermissions() {
   if (filtered.length > 0) { badge.style.display = ''; badge.textContent = filtered.length; }
   else { badge.style.display = 'none'; }
 
+  const fbHtml = renderFeedbackBox();
+
   if (filtered.length === 0) {
-    el.innerHTML = '<div class="empty-state"><div class="icon">&#9632;</div>No pending permissions<br><span style="font-size:12px;color:var(--dim)">Requests from your AI agent will appear here</span></div>';
+    el.innerHTML = fbHtml + '<div class="empty-state"><div class="icon">&#9632;</div>No pending permissions<br><span style="font-size:12px;color:var(--dim)">Requests from your AI agent will appear here</span></div>';
     return;
   }
 
-  el.innerHTML = filtered.map((p, i) => {
+  el.innerHTML = fbHtml + filtered.map((p, i) => {
     const isQ = p.isQuestion || p.tool_name === 'AskUserQuestion' || p.tool_name === 'Request';
     const isDanger = !isQ && (p.tool_name === 'Bash' || p.tool_name === 'Write' || p.tool_name === 'Edit');
     const cardClass = isQ ? 'question-card' : (isDanger ? 'danger' : '');
