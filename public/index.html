@@ -323,6 +323,118 @@
   }
   .claims-summary strong { color: var(--text); }
 
+  /* ── Selected permission card ── */
+  .perm-card.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), 0 0 12px rgba(59,130,246,0.15);
+  }
+
+  /* ── Three-column layout (claim detail panel) ── */
+  @media (min-width: 1201px) {
+    :root { --detail-w: 340px; }
+    .app {
+      grid-template-columns: var(--sidebar-w) 1fr 0px;
+      transition: grid-template-columns 0.25s ease;
+    }
+    .app.detail-open {
+      grid-template-columns: var(--sidebar-w) 1fr var(--detail-w);
+    }
+  }
+
+  .detail-panel {
+    display: none;
+    background: rgba(0,0,0,0.3);
+    border-left: 1px solid var(--border);
+    flex-direction: column;
+    overflow: hidden;
+    grid-row: 2 / -1;
+  }
+  @media (min-width: 1201px) {
+    .detail-panel { display: flex; }
+  }
+  .detail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .detail-title {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--muted);
+  }
+  .detail-close {
+    width: 24px; height: 24px; border-radius: 4px; border: none;
+    background: none; color: var(--dim); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .detail-close:hover { background: var(--bg3); color: var(--text); }
+  .detail-body {
+    flex: 1; overflow-y: auto; padding: 16px;
+    scrollbar-width: thin; scrollbar-color: var(--bg3) transparent;
+  }
+  .detail-section { margin-bottom: 16px; }
+  .detail-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--dim); margin-bottom: 6px;
+  }
+  .detail-value {
+    font-size: 13px; color: var(--muted); line-height: 1.6; word-break: break-word;
+  }
+  .detail-code {
+    font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px;
+    background: rgba(0,0,0,0.3); padding: 10px 12px; border-radius: 6px;
+    white-space: pre-wrap; word-break: break-all; color: var(--muted);
+    border: 1px solid var(--glass-border); max-height: 200px; overflow-y: auto;
+  }
+
+  /* ── Inline claim detail (below 1201px) ── */
+  .claim-detail-inline {
+    display: none;
+    padding: 16px 20px;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    margin: 8px 16px;
+    animation: cardIn 0.2s ease-out;
+  }
+  .claim-detail-inline.open { display: block; }
+
+  /* ── Claim row selected state ── */
+  .claim-row.selected { background: rgba(59,130,246,0.08); }
+
+  /* ── Shortcuts overlay ── */
+  .shortcuts-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    align-items: center; justify-content: center;
+  }
+  .shortcuts-overlay.open { display: flex; }
+  .shortcuts-modal {
+    background: #1a1f2e;
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 24px 32px;
+    max-width: 420px; width: 90%;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+  }
+  .shortcuts-modal h2 {
+    font-size: 14px; font-weight: 700; margin-bottom: 16px; color: var(--text);
+  }
+  .shortcut-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+  }
+  .shortcut-row:last-child { border-bottom: none; }
+  .shortcut-label { color: var(--muted); }
+  .shortcut-key {
+    font-family: 'SF Mono', monospace; font-size: 11px; font-weight: 600;
+    background: var(--bg3); padding: 2px 8px; border-radius: 4px;
+    color: var(--text); border: 1px solid var(--border);
+  }
+
   /* ── Scrollbar styling ── */
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -414,6 +526,31 @@
       </div>
     </div>
   </div>
+
+  <!-- Detail panel (third column, visible on wide viewports) -->
+  <div class="detail-panel" id="detailPanel">
+    <div class="detail-header">
+      <span class="detail-title" id="detailTitle">Detail</span>
+      <button class="detail-close" id="detailClose" onclick="closeDetail()">&times;</button>
+    </div>
+    <div class="detail-body" id="detailBody"></div>
+  </div>
+</div>
+
+<!-- Shortcuts help overlay -->
+<div class="shortcuts-overlay" id="shortcutsOverlay" onclick="if(event.target===this)toggleShortcuts()">
+  <div class="shortcuts-modal">
+    <h2>Keyboard Shortcuts</h2>
+    <div class="shortcut-row"><span class="shortcut-label">Navigate permissions</span><span><span class="shortcut-key">j</span> <span class="shortcut-key">k</span></span></div>
+    <div class="shortcut-row"><span class="shortcut-label">Approve selected</span><span class="shortcut-key">a</span></div>
+    <div class="shortcut-row"><span class="shortcut-label">Deny selected</span><span class="shortcut-key">d</span></div>
+    <div class="shortcut-row"><span class="shortcut-label">Switch to Permissions</span><span class="shortcut-key">1</span></div>
+    <div class="shortcut-row"><span class="shortcut-label">Switch to Messages</span><span class="shortcut-key">2</span></div>
+    <div class="shortcut-row"><span class="shortcut-label">Switch to Claims</span><span class="shortcut-key">3</span></div>
+    <div class="shortcut-row"><span class="shortcut-label">Switch to Settings</span><span class="shortcut-key">4</span></div>
+    <div class="shortcut-row"><span class="shortcut-label">Deselect / close detail</span><span class="shortcut-key">Esc</span></div>
+    <div class="shortcut-row"><span class="shortcut-label">Show this help</span><span class="shortcut-key">?</span></div>
+  </div>
 </div>
 
 <script>
@@ -422,6 +559,9 @@ const TOKEN = '{{TOKEN}}';
 let csrfToken = '';
 let state = { pending: [], activity: [], sessions: [], trustLevel: 'paranoid', sessionRules: [], messages: [] };
 let selectedSession = null; // null = all sessions
+let selectedPermIdx = -1;
+let selectedClaimId = null;
+let detailOpen = false;
 let ws = null;
 let reconnectDelay = 1000;
 
@@ -621,7 +761,7 @@ function renderPermissions() {
     return;
   }
 
-  el.innerHTML = filtered.map(p => {
+  el.innerHTML = filtered.map((p, i) => {
     const isQ = p.isQuestion || p.tool_name === 'AskUserQuestion' || p.tool_name === 'Request';
     const isDanger = !isQ && (p.tool_name === 'Bash' || p.tool_name === 'Write' || p.tool_name === 'Edit');
     const cardClass = isQ ? 'question-card' : (isDanger ? 'danger' : '');
@@ -648,7 +788,8 @@ function renderPermissions() {
       </div>`;
     }
 
-    return `<div class="perm-card ${cardClass}">
+    const selClass = i === selectedPermIdx ? ' selected' : '';
+    return `<div class="perm-card ${cardClass}${selClass}" onclick="selectPerm(${i})">
       <div class="perm-header">
         <span class="perm-tool">${esc(p.tool_name)}</span>
         <span class="perm-session-tag" style="background:hsl(${sessionColor},50%,40%)">${esc(sessionLabel)}</span>
@@ -881,18 +1022,285 @@ function renderClaims() {
     `<div class="claims-summary"><span><strong>${active}</strong> active / ${allClaims.length} total</span><span>status: <strong>${status}</strong></span><span>hash: ${hash}</span></div>` +
     claims.map(c => {
       const sup = c.status === 'superseded' ? ' superseded' : '';
-      return `<div class="claim-row${sup}" title="${esc(c.content)}">
+      const sel = selectedClaimId === c.id ? ' selected' : '';
+      const dataAttr = esc(JSON.stringify(c));
+      return `<div class="claim-row${sup}${sel}" title="${esc(c.content)}" data-claim-id="${c.id}" onclick="showClaimDetail(this)">
         <span class="claim-id">${c.id}</span>
         <span class="claim-type ${c.type}">${c.type}</span>
         <span class="claim-content">${esc(c.content)}</span>
         <span class="claim-evidence">${c.evidence}</span>
       </div>`;
     }).join('') || '<div class="empty-state" style="padding:16px;font-size:12px">No claims match filter</div>';
+
+  // Append inline detail container for narrow viewports
+  const listEl = document.getElementById('claimsList');
+  if (!document.getElementById('claimDetailInline')) {
+    listEl.insertAdjacentHTML('beforeend', '<div class="claim-detail-inline" id="claimDetailInline"></div>');
+  }
 }
 
 function toggleClaimsFilter(type) {
   claimsFilter.type = claimsFilter.type === type ? null : type;
   renderClaims();
+}
+
+// ── Permission selection ──
+function selectPerm(idx) {
+  selectedPermIdx = idx;
+  renderPermissions();
+}
+
+function getFilteredPending() {
+  return selectedSession
+    ? state.pending.filter(p => p.session_id === selectedSession)
+    : state.pending;
+}
+
+// ── Detail panel (three-column) ──
+function openDetail() {
+  detailOpen = true;
+  document.querySelector('.app').classList.add('detail-open');
+}
+
+function closeDetail() {
+  detailOpen = false;
+  selectedClaimId = null;
+  document.querySelector('.app').classList.remove('detail-open');
+  document.getElementById('detailBody').innerHTML = '';
+  // Also close inline detail
+  const inline = document.getElementById('claimDetailInline');
+  if (inline) inline.classList.remove('open');
+  // Remove selected state from claim rows
+  document.querySelectorAll('.claim-row.selected').forEach(r => r.classList.remove('selected'));
+}
+
+function isWideViewport() {
+  return window.innerWidth > 1200;
+}
+
+// ── Claim detail view ──
+function showClaimDetail(rowEl) {
+  const claimId = rowEl.getAttribute('data-claim-id');
+  const allClaims = state.claims?.claims || [];
+  const claim = allClaims.find(c => c.id === claimId);
+  if (!claim) return;
+
+  // Toggle off if clicking same claim
+  if (selectedClaimId === claimId) {
+    closeDetail();
+    selectedClaimId = null;
+    renderClaims();
+    return;
+  }
+
+  selectedClaimId = claimId;
+
+  // Mark selected row
+  document.querySelectorAll('.claim-row.selected').forEach(r => r.classList.remove('selected'));
+  rowEl.classList.add('selected');
+
+  // Build detail HTML
+  const html = buildClaimDetailHtml(claim);
+
+  if (isWideViewport()) {
+    // Three-column: show in detail panel
+    openDetail();
+    document.getElementById('detailTitle').textContent = claim.id;
+    document.getElementById('detailBody').innerHTML = html;
+  } else {
+    // Narrow: show inline below claims list
+    const inline = document.getElementById('claimDetailInline');
+    if (inline) {
+      inline.innerHTML = html;
+      inline.classList.add('open');
+      inline.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+}
+
+function buildClaimDetailHtml(c) {
+  let h = '';
+
+  h += `<div class="detail-section">
+    <div class="detail-label">ID</div>
+    <div class="detail-value" style="font-family:monospace;color:var(--accent-light)">${esc(c.id)}</div>
+  </div>`;
+
+  h += `<div class="detail-section">
+    <div class="detail-label">Type</div>
+    <div><span class="claim-type ${c.type || ''}">${esc(c.type || '-')}</span></div>
+  </div>`;
+
+  if (c.topic) {
+    h += `<div class="detail-section">
+      <div class="detail-label">Topic</div>
+      <div class="detail-value">${esc(c.topic)}</div>
+    </div>`;
+  }
+
+  h += `<div class="detail-section">
+    <div class="detail-label">Content</div>
+    <div class="detail-value">${esc(c.content || c.claim || c.text || '-')}</div>
+  </div>`;
+
+  if (c.source) {
+    h += `<div class="detail-section">
+      <div class="detail-label">Source</div>
+      <div class="detail-value" style="word-break:break-all">${esc(typeof c.source === 'string' ? c.source : JSON.stringify(c.source))}</div>
+    </div>`;
+  }
+
+  if (c.evidence) {
+    h += `<div class="detail-section">
+      <div class="detail-label">Evidence Tier</div>
+      <div class="detail-value">${esc(c.evidence)}</div>
+    </div>`;
+  }
+
+  if (c.status) {
+    h += `<div class="detail-section">
+      <div class="detail-label">Status</div>
+      <div class="detail-value">${esc(c.status)}</div>
+    </div>`;
+  }
+
+  if (c.tags && c.tags.length) {
+    h += `<div class="detail-section">
+      <div class="detail-label">Tags</div>
+      <div class="detail-value">${c.tags.map(t => `<span class="claims-filter-chip" style="cursor:default;margin:0 4px 4px 0;display:inline-block">${esc(t)}</span>`).join('')}</div>
+    </div>`;
+  }
+
+  if (c.conflicts && c.conflicts.length) {
+    h += `<div class="detail-section">
+      <div class="detail-label">Conflicts</div>
+      <div class="detail-value" style="color:var(--red)">${c.conflicts.map(id => esc(id)).join(', ')}</div>
+    </div>`;
+  }
+
+  if (c.superseded_by) {
+    h += `<div class="detail-section">
+      <div class="detail-label">Superseded By</div>
+      <div class="detail-value" style="font-family:monospace">${esc(c.superseded_by)}</div>
+    </div>`;
+  }
+
+  if (c.resolution) {
+    h += `<div class="detail-section">
+      <div class="detail-label">Resolution</div>
+      <div class="detail-value">${esc(typeof c.resolution === 'string' ? c.resolution : JSON.stringify(c.resolution))}</div>
+    </div>`;
+  }
+
+  // Raw JSON
+  h += `<div class="detail-section">
+    <div class="detail-label">Raw</div>
+    <div class="detail-code">${esc(JSON.stringify(c, null, 2))}</div>
+  </div>`;
+
+  return h;
+}
+
+// ── Shortcuts overlay ──
+function toggleShortcuts() {
+  document.getElementById('shortcutsOverlay').classList.toggle('open');
+}
+
+// ── Keyboard handler ──
+document.addEventListener('keydown', function(e) {
+  // Don't intercept when typing in inputs
+  const tag = e.target.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+  // Shortcuts overlay is open -- Esc or ? to close
+  if (document.getElementById('shortcutsOverlay').classList.contains('open')) {
+    if (e.key === 'Escape' || e.key === '?') {
+      toggleShortcuts();
+      e.preventDefault();
+    }
+    return;
+  }
+
+  // ? -- show shortcuts help
+  if (e.key === '?') {
+    toggleShortcuts();
+    e.preventDefault();
+    return;
+  }
+
+  // Esc -- close detail or deselect
+  if (e.key === 'Escape') {
+    if (detailOpen) { closeDetail(); renderClaims(); e.preventDefault(); return; }
+    if (selectedPermIdx >= 0) { selectedPermIdx = -1; renderPermissions(); e.preventDefault(); return; }
+    return;
+  }
+
+  // 1-4 -- switch tabs
+  if (e.key >= '1' && e.key <= '4' && !e.metaKey && !e.ctrlKey) {
+    const panes = ['permissions', 'messages', 'claims', 'settings'];
+    const idx = parseInt(e.key, 10) - 1;
+    const tabs = document.querySelectorAll('.pane-tab');
+    switchPane(panes[idx], tabs[idx]);
+    e.preventDefault();
+    return;
+  }
+
+  // j -- next permission
+  if (e.key === 'j') {
+    const pending = getFilteredPending();
+    if (pending.length > 0) {
+      selectedPermIdx = Math.min(selectedPermIdx + 1, pending.length - 1);
+      renderPermissions();
+      scrollToSelectedPerm();
+      e.preventDefault();
+    }
+    return;
+  }
+
+  // k -- previous permission
+  if (e.key === 'k') {
+    const pending = getFilteredPending();
+    if (pending.length > 0) {
+      selectedPermIdx = Math.max(selectedPermIdx - 1, 0);
+      renderPermissions();
+      scrollToSelectedPerm();
+      e.preventDefault();
+    }
+    return;
+  }
+
+  // a -- approve selected permission
+  if (e.key === 'a') {
+    const pending = getFilteredPending();
+    if (selectedPermIdx >= 0 && selectedPermIdx < pending.length) {
+      const p = pending[selectedPermIdx];
+      if (p.tool_name !== 'AskUserQuestion' && p.tool_name !== 'Request') {
+        decide(p.requestId, true);
+      }
+    }
+    e.preventDefault();
+    return;
+  }
+
+  // d -- deny selected permission
+  if (e.key === 'd') {
+    const pending = getFilteredPending();
+    if (selectedPermIdx >= 0 && selectedPermIdx < pending.length) {
+      const p = pending[selectedPermIdx];
+      if (p.tool_name !== 'AskUserQuestion' && p.tool_name !== 'Request') {
+        decide(p.requestId, false);
+      }
+    }
+    e.preventDefault();
+    return;
+  }
+});
+
+function scrollToSelectedPerm() {
+  const cards = document.querySelectorAll('#permList .perm-card');
+  if (cards[selectedPermIdx]) {
+    cards[selectedPermIdx].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
 }
 
 // ── Boot ──
