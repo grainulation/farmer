@@ -15,18 +15,18 @@
 <meta name="twitter:description" content="Your AI agent needs permission to run tools. You are not at your desk. Farmer lets you approve from your phone.">
 <meta name="twitter:image" content="https://grainulation.github.io/farmer/og-image.svg">
 <link rel="canonical" href="https://grainulation.github.io/farmer/">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%2309090b'/><text x='32' y='48' text-anchor='middle' font-family='system-ui,sans-serif' font-weight='800' font-size='44' fill='%2322c55e'>f</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%230a0e1a'/><path d='M32,3.84 L18.18,3.84 C8.04,13.98 8.04,45.52 18.18,60.16 L32,60.16' fill='none' stroke='%233b82f6' stroke-width='1.28' stroke-linecap='round' stroke-linejoin='round'/><text x='32' y='33' text-anchor='middle' dominant-baseline='central' fill='%233b82f6' font-family='-apple-system,system-ui,sans-serif' font-size='24' font-weight='700'>F</text></svg>">
 <style>
 :root {
-  --bg: #09090b;
-  --bg-2: #111113;
+  --bg: #0a0e1a;
+  --bg-2: #111827;
   --surface: rgba(255,255,255,0.03);
   --surface-hover: rgba(255,255,255,0.06);
   --border: rgba(255,255,255,0.07);
   --border-light: rgba(255,255,255,0.12);
-  --accent: #22c55e;
-  --accent-dim: rgba(34,197,94,0.12);
-  --accent-glow: rgba(34,197,94,0.06);
+  --accent: #3b82f6;
+  --accent-dim: rgba(59,130,246,0.12);
+  --accent-glow: rgba(59,130,246,0.06);
   --red: #e11d48;
   --red-dim: rgba(225,29,72,0.12);
   --orange: #f59e0b;
@@ -66,7 +66,7 @@ code,pre{font-family:var(--mono)}
 .hf1{animation-delay:.05s}.hf2{animation-delay:.15s}.hf3{animation-delay:.25s}.hf4{animation-delay:.4s}
 @keyframes hIn{to{opacity:1;transform:none}}
 
-nav{position:sticky;top:0;z-index:100;background:rgba(9,9,11,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:14px 0}
+nav{position:sticky;top:0;z-index:100;background:rgba(10,14,26,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:14px 0}
 nav .container{display:flex;align-items:center;justify-content:space-between}
 .nav-logo{font-weight:700;font-size:2rem;letter-spacing:-.02em;color:var(--text);text-decoration:none}
 .nav-logo span{color:var(--accent)}
@@ -142,7 +142,7 @@ nav .container{display:flex;align-items:center;justify-content:space-between}
 .features{padding:80px 0}
 .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
 .feature-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px 24px;transition:border-color .2s}
-.feature-card:hover{border-color:rgba(34,197,94,.25)}
+.feature-card:hover{border-color:rgba(59,130,246,.25)}
 .feature-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;font-size:18px}
 .feature-card h3{font-size:.9375rem;font-weight:700;margin-bottom:6px}
 .feature-card p{font-size:.8125rem;color:var(--text-2);line-height:1.6}
@@ -180,7 +180,7 @@ footer p{margin-bottom:6px}
   .hero h1{font-size:2rem}
   .qs-code,.qs-output,pre,code{font-size:12px;overflow-x:auto}
   .container{padding:0 16px}
-  section,.what-is,.quickstart,.features,.faq,.ecosystem,.example{padding:40px 0}
+  section,.what-is,.quickstart,.features,.faq,.ecosystem,.example{padding:40px 0}.hero{padding:48px 0 32px}
   .what-box{padding:28px 20px}
   .faq-item{padding:24px 20px}
   .mockup-body{padding:16px}
@@ -216,9 +216,7 @@ footer p{margin-bottom:6px}
 
 <nav aria-label="Main navigation">
   <div class="container">
-    <a href="#" class="nav-logo">
-      <span>f</span>armer
-    </a>
+    <a href="#" class="nav-logo"><svg width="98" height="56" viewBox="0 0 84 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle"><path d="M24,2.9 L13.6,2.9 C6.0,10.5 6.0,34.1 13.6,45.1 L24,45.1" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="24" y="24" text-anchor="middle" dominant-baseline="central" fill="#3b82f6" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="700">F</text><text x="30.0" y="24" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="700">armer</text></svg></a>
     <div class="nav-links">
       <a href="#what">About</a>
       <a href="#quickstart">Quick Start</a>
@@ -232,7 +230,7 @@ footer p{margin-bottom:6px}
 
 <section class="hero">
   <div class="container">
-    <div class="hero-badge hf hf1"><span style="color:#fff">Part of the </span><strong style="color:#fff"><span style="color:#a78bfa">gr</span>ainulation</strong> ecosystem</div>
+    <div class="hero-badge hf hf1">Part of <svg width="88" height="30" viewBox="0 0 140 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-left:4px"><path d="M24,2.9 L13.6,2.9 C6.0,10.5 6.0,34.1 13.6,45.1 L24,45.1" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="24" y="24" text-anchor="middle" dominant-baseline="central" fill="#9ca3af" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="700">G</text><text x="30" y="24" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="700">rainulation</text></svg></div>
     <h1 class="hf hf2">Your AI agent needs<br>permission to run tools.<br><em>You're not at your desk.</em></h1>
     <p class="hero-sub hf hf3"><strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong> is a real-time permission dashboard for Claude Code. When your AI agent wants to run a command, edit a file, or access a resource, you see a card on your phone and tap Approve or Deny. One tap. From anywhere.</p>
     <div class="hero-actions hf hf4">
@@ -450,12 +448,12 @@ requests a tool call. No polling delay.</div>
 
 <section class="ecosystem">
   <div class="container" style="text-align:center">
-    <div class="section-label rv"><span style="color:#fff">Part of </span><strong style="color:#fff"><span style="color:#a78bfa">gr</span>ainulation</strong></div>
+    <div class="section-label rv">Part of <svg width="88" height="30" viewBox="0 0 140 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-left:4px"><path d="M24,2.9 L13.6,2.9 C6.0,10.5 6.0,34.1 13.6,45.1 L24,45.1" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="24" y="24" text-anchor="middle" dominant-baseline="central" fill="#9ca3af" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="700">G</text><text x="30" y="24" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="700">rainulation</text></svg></div>
     <h2 class="section-title rv rv-d1">The ecosystem</h2>
     <p class="section-sub rv rv-d2" style="margin-left:auto;margin-right:auto"><strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong> supervises AI agents running <strong style="color:#fff;font-size:110%"><span style="color:#fbbf24">w</span>heat</strong> sprints — or any Claude Code session.</p>
     <div class="eco-grid rv rv-d3">
       <a href="https://grainulation.github.io/wheat/" class="eco-chip"><span class="eco-dot" style="background:#fbbf24"></span><span class="eco-name"><span style="color:#fbbf24">w</span>heat</span> research sprints</a>
-      <a href="https://grainulation.github.io/farmer/" class="eco-chip current"><span class="eco-dot" style="background:#22c55e"></span><span class="eco-name"><span style="color:#22c55e">f</span>armer</span> permissions</a>
+      <a href="https://grainulation.github.io/farmer/" class="eco-chip current"><span class="eco-dot" style="background:#3b82f6"></span><span class="eco-name"><span style="color:#3b82f6">f</span>armer</span> permissions</a>
       <a href="https://grainulation.github.io/barn/" class="eco-chip"><span class="eco-dot" style="background:#e11d48"></span><span class="eco-name"><span style="color:#e11d48">b</span>arn</span> shared tools</a>
       <a href="https://grainulation.github.io/mill/" class="eco-chip"><span class="eco-dot" style="background:#94a3b8"></span><span class="eco-name"><span style="color:#94a3b8">m</span>ill</span> export</a>
       <a href="https://grainulation.github.io/silo/" class="eco-chip"><span class="eco-dot" style="background:#60a5fa"></span><span class="eco-name"><span style="color:#60a5fa">s</span>ilo</span> knowledge packs</a>
@@ -470,7 +468,7 @@ requests a tool call. No polling delay.</div>
 
 <footer>
   <div class="container">
-    <p><span style="color:#fff">Part of the </span><a href="https://grainulation.github.io/grainulation/"><strong style="color:#fff"><span style="color:#a78bfa">gr</span>ainulation</strong></a> ecosystem</p>
+    <p>Part of <a href="https://grainulation.github.io/grainulation/"><svg width="88" height="30" viewBox="0 0 140 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-left:4px"><path d="M24,2.9 L13.6,2.9 C6.0,10.5 6.0,34.1 13.6,45.1 L24,45.1" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="24" y="24" text-anchor="middle" dominant-baseline="central" fill="#9ca3af" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="700">G</text><text x="30" y="24" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="700">rainulation</text></svg></a></p>
     <p><strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong> — <a href="https://github.com/grainulation/farmer">GitHub</a> — <a href="https://github.com/grainulation/farmer#readme">Docs</a></p>
   </div>
 </footer>
