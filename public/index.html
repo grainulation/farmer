@@ -17,7 +17,7 @@
     --accent-light: #60a5fa;
     --green: #22c55e;
     --orange: #f59e0b;
-    --red: #ef4444;
+    --red: #e11d48;
     --purple: #a78bfa;
     --text: #f1f5f9;
     --muted: #94a3b8;
@@ -72,7 +72,7 @@
     font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
     padding: 3px 10px; border-radius: 12px; cursor: pointer;
   }
-  .trust-badge.paranoid { background: rgba(239,68,68,0.15); color: var(--red); }
+  .trust-badge.paranoid { background: rgba(225,29,72,0.15); color: var(--red); }
   .trust-badge.standard { background: rgba(245,158,11,0.15); color: var(--orange); }
   .trust-badge.autonomous { background: rgba(34,197,94,0.15); color: var(--green); }
 
@@ -196,7 +196,7 @@
   }
   @keyframes cardIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
   .perm-card.resolved { opacity: 0.4; border-left-color: var(--dim); }
-  .perm-card.danger { border-left-color: var(--red); background: rgba(239,68,68,0.04); }
+  .perm-card.danger { border-left-color: var(--red); background: rgba(225,29,72,0.04); }
   .perm-card.question-card { border-left-color: var(--accent); }
 
   .perm-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
@@ -266,7 +266,7 @@
     font-size: 12px; flex-shrink: 0; margin-top: 1px;
   }
   .activity-icon.success { background: rgba(34,197,94,0.15); color: var(--green); }
-  .activity-icon.failure { background: rgba(239,68,68,0.15); color: var(--red); }
+  .activity-icon.failure { background: rgba(225,29,72,0.15); color: var(--red); }
   .activity-icon.decision { background: rgba(59,130,246,0.15); color: var(--accent-light); }
   .activity-icon.notification { background: rgba(167,139,250,0.15); color: var(--purple); }
   .activity-body { flex: 1; min-width: 0; }
@@ -285,7 +285,7 @@
     display: none; padding: 8px 16px; font-size: 12px; font-weight: 600;
     text-align: center; grid-column: 1 / -1;
   }
-  .banner.blocked { display: block; background: rgba(239,68,68,0.15); color: var(--red); border-bottom: 1px solid rgba(239,68,68,0.2); }
+  .banner.blocked { display: block; background: rgba(225,29,72,0.15); color: var(--red); border-bottom: 1px solid rgba(225,29,72,0.2); }
   .banner.disconnected { display: block; background: rgba(245,158,11,0.15); color: var(--orange); border-bottom: 1px solid rgba(245,158,11,0.2); }
 
   /* ── Claims ── */
@@ -305,7 +305,7 @@
   .claim-type.constraint { background: rgba(251,191,36,0.15); color: #fbbf24; }
   .claim-type.factual { background: rgba(96,165,250,0.15); color: var(--accent-light); }
   .claim-type.estimate { background: rgba(167,139,250,0.15); color: var(--purple); }
-  .claim-type.risk { background: rgba(239,68,68,0.15); color: var(--red); }
+  .claim-type.risk { background: rgba(225,29,72,0.15); color: var(--red); }
   .claim-type.recommendation { background: rgba(34,197,94,0.15); color: var(--green); }
   .claim-type.feedback { background: rgba(245,158,11,0.15); color: var(--orange); }
   .claim-content { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -563,6 +563,7 @@
       <div class="pane-tab" data-pane="claims" onclick="switchPane('claims', this)">
         Claims <span class="tab-badge" id="claimsBadge" style="display:none">0</span>
       </div>
+      <div class="pane-tab" data-pane="sites" onclick="switchPane('sites', this); loadSites()">Sites</div>
       <div class="pane-tab" data-pane="settings" onclick="switchPane('settings', this)">Settings</div>
     </div>
 
@@ -591,13 +592,28 @@
       </div>
     </div>
 
+    <!-- Sites pane -->
+    <div class="pane-content" id="pane-sites" style="display:none;flex:1;overflow-y:auto;padding:16px 20px">
+      <div id="sitesList">
+        <div class="empty-state"><div class="icon">&#9673;</div>Loading sites...<br><span style="font-size:12px;color:var(--dim)">Configure via .farmer-sites.json or auto-discovered from sibling repos</span></div>
+      </div>
+      <div style="margin-top:20px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;">
+        <h4 style="font-size:13px;margin-bottom:8px;color:var(--muted)">Add your sites</h4>
+        <p style="font-size:11px;color:var(--dim);margin-bottom:8px;line-height:1.5">Create <code style="background:var(--bg);padding:2px 5px;border-radius:3px">.farmer-sites.json</code> in your project root:</p>
+        <pre style="font-size:10px;color:var(--dim);background:var(--bg);padding:10px;border-radius:6px;overflow-x:auto;line-height:1.5">[
+  { "name": "my-app", "color": "#3b82f6", "description": "Web app", "path": "../my-app/site/index.html" },
+  { "name": "docs", "color": "#6ee7b7", "description": "Documentation", "url": "http://localhost:3000" }
+]</pre>
+      </div>
+    </div>
+
     <!-- Settings pane -->
     <div class="pane-content" id="pane-settings" style="display:none;flex:1;overflow-y:auto;padding:20px">
       <div style="max-width:500px">
         <h3 style="font-size:14px;margin-bottom:12px">Trust Level</h3>
         <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Controls which tools are auto-approved without asking.</p>
         <div style="display:flex;gap:8px;margin-bottom:24px">
-          <button class="btn" style="background:rgba(239,68,68,0.15);color:var(--red)" onclick="setTrust('paranoid')">Paranoid</button>
+          <button class="btn" style="background:rgba(225,29,72,0.15);color:var(--red)" onclick="setTrust('paranoid')">Paranoid</button>
           <button class="btn" style="background:rgba(245,158,11,0.15);color:var(--orange)" onclick="setTrust('standard')">Standard</button>
           <button class="btn" style="background:rgba(34,197,94,0.15);color:var(--green)" onclick="setTrust('autonomous')">Autonomous</button>
         </div>
@@ -1044,6 +1060,38 @@ function switchPane(name, tab) {
   if (tab) tab.classList.add('active');
 }
 
+let sitesLoaded = false;
+async function loadSites() {
+  if (sitesLoaded) return;
+  try {
+    const resp = await fetch('/api/sites?token=' + TOKEN);
+    if (!resp.ok) throw new Error('Failed');
+    const sites = await resp.json();
+    sitesLoaded = true;
+    renderSites(sites);
+  } catch (e) {
+    document.getElementById('sitesList').innerHTML =
+      '<div class="empty-state"><div class="icon">&#9888;</div>Could not load sites<br><span style="font-size:12px;color:var(--dim)">' + e.message + '</span></div>';
+  }
+}
+
+function renderSites(sites) {
+  const el = document.getElementById('sitesList');
+  if (!sites.length) {
+    el.innerHTML = '<div class="empty-state"><div class="icon">&#9673;</div>No sites found<br><span style="font-size:12px;color:var(--dim)">Add .farmer-sites.json to your project, or create site/index.html in sibling repos</span></div>';
+    return;
+  }
+  el.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">' +
+    sites.map(s => {
+      const c = s.color || '#94a3b8';
+      const href = s.url ? s.url : '/sites/' + s.name + '?token=' + TOKEN;
+      return '<a href="' + href + '" target="_blank" style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);text-decoration:none">' +
+        '<div style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;background:' + c + '20;color:' + c + ';flex-shrink:0">' + (s.name||'?')[0] + '</div>' +
+        '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600">' + s.name + '</div><div style="font-size:10px;color:var(--dim)">' + (s.description||'') + '</div></div>' +
+        '<span style="color:var(--dim)">&#8250;</span></a>';
+    }).join('') + '</div>';
+}
+
 function cycleTrust() {
   const levels = ['paranoid', 'standard', 'autonomous'];
   const next = levels[(levels.indexOf(state.trustLevel) + 1) % levels.length];
@@ -1129,7 +1177,7 @@ function notifySound() {
 }
 
 // ── Session color palette (5 distinct colors, cycles) ──
-const SESSION_COLORS = ['#3b82f6', '#22c55e', '#f59e0b', '#a78bfa', '#ef4444'];
+const SESSION_COLORS = ['#3b82f6', '#22c55e', '#f59e0b', '#a78bfa', '#e11d48'];
 function getSessionColor(sessionId) {
   if (!sessionId) return SESSION_COLORS[0];
   const sessions = state.sessions || [];
