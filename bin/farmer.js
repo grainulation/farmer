@@ -36,16 +36,19 @@ Commands:
 
 Options (start):
   --port <n>           Port to listen on (default: 9090)
-  --token <secret>     Auth token (auto-generated if omitted)
+  --token <secret>     Auth token (persisted to .farmer-token if omitted)
   --trust-proxy        Trust X-Forwarded-For headers
   --data-dir <path>    Directory for state/audit files (default: cwd)
   --max-sessions <n>   Max concurrent sessions (default: 50)
   --claims <path>      Path to claims.json (enables Claims tab)
   --compilation <path> Path to compilation.json (enables sprint status)
+  --no-tunnel          Skip cloudflared tunnel auto-start
+  --no-open            Don't open browser on start
 
 Examples:
   farmer start --port 8080
   farmer start --claims ./claims.json --compilation ./compilation.json
+  farmer start --no-tunnel --no-open
   farmer stop
   farmer status`);
   process.exit(0);
@@ -71,6 +74,8 @@ switch (command) {
       tokenGracePeriod: parseInt(arg('token-grace-period', '60'), 10),
       claimsPath: claimsPath ? resolve(claimsPath) : '',
       compilationPath: compilationPath ? resolve(compilationPath) : '',
+      noTunnel: args.includes('--no-tunnel'),
+      noOpen: args.includes('--no-open'),
     });
     server.start();
     break;

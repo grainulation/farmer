@@ -1,6 +1,6 @@
 # Hook Protocol Specification
 
-Farmer's hook protocol is agent-agnostic. Each hook endpoint accepts `POST` requests with a JSON body from `localhost` only (127.0.0.1 / ::1). No authentication is required for hook endpoints — they are protected by the localhost restriction.
+Farmer's hook protocol is agent-agnostic. Each hook endpoint accepts `POST` requests with a JSON body from `localhost` only (127.0.0.1 / ::1). No authentication is required for hook endpoints — they are protected by the localhost restriction. Warning: if farmer is configured to bind to `0.0.0.0` or any non-localhost address, hook endpoints become unauthenticated and network-exposed.
 
 ## Common Fields
 
