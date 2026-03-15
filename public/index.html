@@ -288,6 +288,41 @@
   .banner.blocked { display: block; background: rgba(239,68,68,0.15); color: var(--red); border-bottom: 1px solid rgba(239,68,68,0.2); }
   .banner.disconnected { display: block; background: rgba(245,158,11,0.15); color: var(--orange); border-bottom: 1px solid rgba(245,158,11,0.2); }
 
+  /* ── Claims ── */
+  .claim-row {
+    display: grid; grid-template-columns: 48px 80px 1fr 64px;
+    gap: 8px; align-items: center;
+    padding: 8px 0; border-bottom: 1px solid var(--border);
+    font-size: 12px; cursor: pointer;
+  }
+  .claim-row:hover { background: var(--bg2); }
+  .claim-row.superseded { opacity: 0.4; }
+  .claim-id { font-weight: 700; font-family: monospace; font-size: 11px; }
+  .claim-type {
+    font-size: 10px; padding: 2px 6px; border-radius: 4px;
+    font-weight: 600; text-align: center;
+  }
+  .claim-type.constraint { background: rgba(251,191,36,0.15); color: #fbbf24; }
+  .claim-type.factual { background: rgba(96,165,250,0.15); color: var(--accent-light); }
+  .claim-type.estimate { background: rgba(167,139,250,0.15); color: var(--purple); }
+  .claim-type.risk { background: rgba(239,68,68,0.15); color: var(--red); }
+  .claim-type.recommendation { background: rgba(34,197,94,0.15); color: var(--green); }
+  .claim-type.feedback { background: rgba(245,158,11,0.15); color: var(--orange); }
+  .claim-content { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .claim-evidence { font-size: 10px; color: var(--dim); text-align: right; }
+  .claims-filter-chip {
+    padding: 3px 8px; border-radius: 10px; font-size: 10px; cursor: pointer;
+    border: 1px solid var(--border); background: none; color: var(--muted);
+    font-family: inherit;
+  }
+  .claims-filter-chip:hover { border-color: var(--dim); }
+  .claims-filter-chip.active { border-color: var(--accent); color: var(--accent-light); background: rgba(59,130,246,0.08); }
+  .claims-summary {
+    display: flex; gap: 12px; padding: 8px 16px;
+    font-size: 11px; color: var(--dim); border-bottom: 1px solid var(--border);
+  }
+  .claims-summary strong { color: var(--text); }
+
   /* ── Scrollbar styling ── */
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -328,6 +363,9 @@
         Permissions <span class="tab-badge" id="permBadge" style="display:none">0</span>
       </div>
       <div class="pane-tab" data-pane="messages" onclick="switchPane('messages', this)">Messages</div>
+      <div class="pane-tab" data-pane="claims" onclick="switchPane('claims', this)">
+        Claims <span class="tab-badge" id="claimsBadge" style="display:none">0</span>
+      </div>
       <div class="pane-tab" data-pane="settings" onclick="switchPane('settings', this)">Settings</div>
     </div>
 
@@ -346,6 +384,14 @@
     <!-- Messages pane -->
     <div class="pane-content" id="pane-messages" style="display:none;flex:1;overflow-y:auto;padding:16px 20px">
       <div class="empty-state"><div class="icon">&#9993;</div>No messages yet</div>
+    </div>
+
+    <!-- Claims pane (wheat integration) -->
+    <div class="pane-content" id="pane-claims" style="display:none;flex:1;overflow-y:auto;padding:0">
+      <div id="claimsFilter" style="display:flex;gap:6px;padding:8px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap"></div>
+      <div id="claimsList" style="flex:1;overflow-y:auto;padding:8px 16px">
+        <div class="empty-state" style="padding:24px"><div class="icon">&#9670;</div>No claims data<br><span style="font-size:12px;color:var(--dim)">Claims appear when farmer is started with --claims flag</span></div>
+      </div>
     </div>
 
     <!-- Settings pane -->
@@ -421,6 +467,8 @@ function handleMessage(msg) {
       state.sessions = msg.data.sessions || [];
       state.trustLevel = msg.data.trustLevel || 'paranoid';
       state.sessionRules = msg.data.sessionRules || [];
+      state.claims = msg.data.claims || null;
+      state.compilation = msg.data.compilation || null;
       renderAll();
       break;
 
@@ -499,6 +547,14 @@ function handleMessage(msg) {
       renderRules();
       break;
 
+    case 'claims':
+      if (msg.data) {
+        state.claims = msg.data.claims;
+        state.compilation = msg.data.compilation;
+        renderClaims();
+      }
+      break;
+
     case 'heartbeat':
       // Update session liveness
       if (msg.data.sessions) {
@@ -523,6 +579,7 @@ function renderAll() {
   renderPermissions();
   renderActivity();
   renderMessages();
+  renderClaims();
   renderTrustBadge();
   renderRules();
 }
@@ -786,6 +843,56 @@ function notifySound() {
     osc.frequency.value = 800; gain.gain.value = 0.1;
     osc.start(); osc.stop(ctx.currentTime + 0.1);
   } catch {}
+}
+
+// ── Claims ──
+let claimsFilter = { type: null };
+
+function renderClaims() {
+  const claimsData = state.claims;
+  if (!claimsData?.claims?.length) {
+    document.getElementById('claimsBadge').style.display = 'none';
+    return;
+  }
+  const allClaims = claimsData.claims;
+  const active = allClaims.filter(c => c.status === 'active').length;
+  const badge = document.getElementById('claimsBadge');
+  badge.textContent = active;
+  badge.style.display = '';
+
+  // Filters
+  const types = ['constraint', 'factual', 'estimate', 'risk', 'recommendation', 'feedback'];
+  document.getElementById('claimsFilter').innerHTML =
+    types.map(t => {
+      const isActive = claimsFilter.type === t ? ' active' : '';
+      const count = allClaims.filter(c => c.type === t).length;
+      return count ? `<button class="claims-filter-chip${isActive}" onclick="toggleClaimsFilter('${t}')">${t} (${count})</button>` : '';
+    }).join('');
+
+  // List
+  let claims = allClaims;
+  if (claimsFilter.type) claims = claims.filter(c => c.type === claimsFilter.type);
+
+  const comp = state.compilation;
+  const status = comp?.status || 'unknown';
+  const hash = comp?.claims_hash || '—';
+
+  document.getElementById('claimsList').innerHTML =
+    `<div class="claims-summary"><span><strong>${active}</strong> active / ${allClaims.length} total</span><span>status: <strong>${status}</strong></span><span>hash: ${hash}</span></div>` +
+    claims.map(c => {
+      const sup = c.status === 'superseded' ? ' superseded' : '';
+      return `<div class="claim-row${sup}" title="${esc(c.content)}">
+        <span class="claim-id">${c.id}</span>
+        <span class="claim-type ${c.type}">${c.type}</span>
+        <span class="claim-content">${esc(c.content)}</span>
+        <span class="claim-evidence">${c.evidence}</span>
+      </div>`;
+    }).join('') || '<div class="empty-state" style="padding:16px;font-size:12px">No claims match filter</div>';
+}
+
+function toggleClaimsFilter(type) {
+  claimsFilter.type = claimsFilter.type === type ? null : type;
+  renderClaims();
 }
 
 // ── Boot ──

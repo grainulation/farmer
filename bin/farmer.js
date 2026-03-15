@@ -40,9 +40,12 @@ Options (start):
   --trust-proxy        Trust X-Forwarded-For headers
   --data-dir <path>    Directory for state/audit files (default: cwd)
   --max-sessions <n>   Max concurrent sessions (default: 50)
+  --claims <path>      Path to claims.json (enables Claims tab)
+  --compilation <path> Path to compilation.json (enables sprint status)
 
 Examples:
   farmer start --port 8080
+  farmer start --claims ./claims.json --compilation ./compilation.json
   farmer stop
   farmer status`);
   process.exit(0);
@@ -56,6 +59,8 @@ if (command === '--version' || command === '-v') {
 
 switch (command) {
   case 'start': {
+    const claimsPath = arg('claims', '');
+    const compilationPath = arg('compilation', '') || (claimsPath ? resolve(join(resolve(claimsPath, '..'), 'compilation.json')) : '');
     const server = new FarmerServer({
       port: parseInt(arg('port', '9090'), 10),
       token: arg('token', undefined),
@@ -64,6 +69,8 @@ switch (command) {
       maxSessions: parseInt(arg('max-sessions', '50'), 10),
       tokenRotationInterval: parseInt(arg('token-rotation-interval', '0'), 10),
       tokenGracePeriod: parseInt(arg('token-grace-period', '60'), 10),
+      claimsPath: claimsPath ? resolve(claimsPath) : '',
+      compilationPath: compilationPath ? resolve(compilationPath) : '',
     });
     server.start();
     break;
