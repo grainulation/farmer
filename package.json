@@ -6,7 +6,7 @@
   "author": "grainulation contributors",
   "repository": {
     "type": "git",
-    "url": "https://github.com/grainulation/farmer"
+    "url": "git+https://github.com/grainulation/farmer.git"
   },
   "homepage": "https://farmer.grainulation.com",
   "bugs": {
@@ -30,7 +30,7 @@
     "./persistence": "./lib/persistence.js"
   },
   "bin": {
-    "farmer": "./bin/farmer.js"
+    "farmer": "bin/farmer.js"
   },
   "files": [
     "bin/",
@@ -43,6 +43,9 @@
     "stop": "node bin/farmer.js stop",
     "status": "node bin/farmer.js status",
     "test": "node --test test/"
+  },
+  "dependencies": {
+    "ws": "^8.0.0"
   },
   "engines": {
     "node": ">=18"

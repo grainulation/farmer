@@ -1,0 +1,10 @@
+{
+  "name": "Farmer",
+  "short_name": "Farmer",
+  "description": "Session manager and mobile dashboard for the @grainulation ecosystem",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0e1a",
+  "theme_color": "#3b82f6",
+  "icons": []
+}

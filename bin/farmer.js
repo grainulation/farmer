@@ -8,6 +8,18 @@
  *   farmer status
  */
 
+// Node version gate — fail fast with a clear message on Node < 18
+{
+  const [major] = process.versions.node.split('.').map(Number);
+  if (major < 18) {
+    console.error(
+      `\n  Error: Node 18+ is required, but you are running ${process.version}.\n` +
+      `  Please upgrade Node.js: https://nodejs.org/\n`
+    );
+    process.exit(1);
+  }
+}
+
 import { join, resolve } from 'node:path';
 import { existsSync, readFileSync } from 'node:fs';
 import { FarmerServer } from '../lib/server.js';
@@ -32,6 +44,26 @@ function arg(name, fallback) {
 }
 
 const dataDir = resolve(arg('data-dir', process.cwd()));
+
+// Load .farmer-config.json (optional — CLI flags override)
+let fileConfig = {};
+for (const searchDir of [process.cwd(), dataDir]) {
+  const configPath = join(searchDir, '.farmer-config.json');
+  if (existsSync(configPath)) {
+    try { fileConfig = JSON.parse(readFileSync(configPath, 'utf8')); } catch {}
+    break;
+  }
+}
+function cfg(name, fallback) {
+  // CLI flag wins, then config file, then fallback
+  const cliVal = arg(name, undefined);
+  if (cliVal !== undefined) return cliVal;
+  // config keys use camelCase: "tunnel-hostname" -> "tunnelHostname"
+  const camel = name.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+  if (fileConfig[camel] !== undefined) return String(fileConfig[camel]);
+  return fallback;
+}
+
 const pidLock = new PidLock(join(dataDir, '.farmer.pid'));
 
 if (command === '--help' || command === '-h' || command === 'help') {
@@ -45,20 +77,28 @@ Commands:
   status   Check if Farmer is running
 
 Options (start):
-  --port <n>           Port to listen on (default: 9090)
-  --token <secret>     Auth token (persisted to .farmer-token if omitted)
-  --trust-proxy        Trust X-Forwarded-For headers
-  --data-dir <path>    Directory for state/audit files (default: cwd)
-  --max-sessions <n>   Max concurrent sessions (default: 50)
-  --claims <path>      Path to claims.json (enables Claims tab)
-  --compilation <path> Path to compilation.json (enables sprint status)
-  --no-tunnel          Skip cloudflared tunnel auto-start
-  --no-open            Don't open browser on start
-  --verbose            Enable verbose logging to stderr
+  --port <n>               Port to listen on (default: 9090)
+  --token <secret>         Auth token (persisted to .farmer-token if omitted)
+  --trust-proxy            Trust X-Forwarded-For headers
+  --data-dir <path>        Directory for state/audit files (default: cwd)
+  --max-sessions <n>       Max concurrent sessions (default: 50)
+  --claims <path>          Path to claims.json (enables Claims tab)
+  --compilation <path>     Path to compilation.json (enables sprint status)
+  --tunnel-name <name>     Named cloudflared tunnel (stable URL)
+  --tunnel-hostname <host> Hostname for named tunnel
+  --no-tunnel              Skip cloudflared tunnel auto-start
+  --no-open                Don't open browser on start
+  --verbose                Enable verbose logging to stderr
+
+Config file:
+  Place .farmer-config.json in CWD or --data-dir. Supports: port,
+  trustProxy, registeredProjects, tunnelName, tunnelHostname, rateLimit.
+  CLI flags override config values.
 
 Examples:
   farmer start --port 8080
   farmer start --claims ./claims.json --compilation ./compilation.json
+  farmer start --tunnel-name my-tunnel --tunnel-hostname farm.example.com
   farmer start --no-tunnel --no-open
   farmer stop
   farmer status`);
@@ -73,18 +113,37 @@ if (command === '--version' || command === '-v') {
 
 switch (command) {
   case 'start': {
-    const claimsPath = arg('claims', '');
-    const compilationPath = arg('compilation', '') || (claimsPath ? resolve(join(resolve(claimsPath, '..'), 'compilation.json')) : '');
+    const claimsPath = cfg('claims', '');
+    const compilationPath = cfg('compilation', '') || (claimsPath ? resolve(join(resolve(claimsPath, '..'), 'compilation.json')) : '');
+
+    // Parse registered projects from config (array) or CLI (comma-separated)
+    let registeredProjects = [];
+    if (fileConfig.registeredProjects && Array.isArray(fileConfig.registeredProjects)) {
+      registeredProjects = fileConfig.registeredProjects.map(p => resolve(p));
+    }
+    const cliProjects = arg('registered-projects', undefined);
+    if (cliProjects) registeredProjects = cliProjects.split(',').map(p => resolve(p.trim()));
+
+    // Parse rate limits from config
+    let rateLimit = undefined;
+    if (fileConfig.rateLimit && typeof fileConfig.rateLimit === 'object') {
+      rateLimit = fileConfig.rateLimit;
+    }
+
     const server = new FarmerServer({
-      port: parseInt(arg('port', '9090'), 10),
+      port: parseInt(cfg('port', '9090'), 10),
       token: arg('token', undefined),
-      trustProxy: args.includes('--trust-proxy'),
+      trustProxy: args.includes('--trust-proxy') || fileConfig.trustProxy === true,
       dataDir,
-      maxSessions: parseInt(arg('max-sessions', '50'), 10),
-      tokenRotationInterval: parseInt(arg('token-rotation-interval', '0'), 10),
-      tokenGracePeriod: parseInt(arg('token-grace-period', '60'), 10),
+      maxSessions: parseInt(cfg('max-sessions', '50'), 10),
+      tokenRotationInterval: parseInt(cfg('token-rotation-interval', '0'), 10),
+      tokenGracePeriod: parseInt(cfg('token-grace-period', '60'), 10),
       claimsPath: claimsPath ? resolve(claimsPath) : '',
       compilationPath: compilationPath ? resolve(compilationPath) : '',
+      registeredProjects,
+      tunnelName: cfg('tunnel-name', ''),
+      tunnelHostname: cfg('tunnel-hostname', ''),
+      rateLimit,
       noTunnel: args.includes('--no-tunnel'),
       noOpen: args.includes('--no-open'),
     });
@@ -114,12 +173,21 @@ switch (command) {
   }
 
   case 'status': {
+    const jsonMode = args.includes('--json');
     const pid = pidLock.readPid();
     if (!pid) {
-      console.log('Farmer is not running.');
+      if (jsonMode) {
+        console.log(JSON.stringify({ running: false, pid: null }));
+      } else {
+        console.log('Farmer is not running.');
+      }
       process.exit(1);
     }
     const running = pidLock.isRunning();
+    if (jsonMode) {
+      console.log(JSON.stringify({ running, pid }));
+      process.exit(running ? 0 : 1);
+    }
     if (running) {
       console.log(`Farmer is running (PID ${pid}).`);
       process.exit(0);

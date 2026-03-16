@@ -17,11 +17,17 @@ Farmer sits between your AI coding agent (Claude Code, etc.) and your terminal, 
 - **AskUserQuestion** — deny-to-respond pattern lets you answer agent questions from the dashboard
 - **Data persistence** — activity and messages survive server restarts
 
+## Install
+
+```bash
+npm install -g @grainulation/farmer
+```
+
 ## Quick Start
 
 ```bash
 # Start the dashboard
-node bin/farmer.js start --port 9090
+npx @grainulation/farmer start --port 9090
 
 # The token URL is printed to the terminal
 # Open it in your browser
