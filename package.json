@@ -1,13 +1,43 @@
 {
   "name": "@grainulation/farmer",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Desktop-first permission dashboard for AI coding agents",
-  "type": "module",
   "license": "MIT",
+  "author": "grainulation contributors",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grainulation/farmer"
+  },
+  "homepage": "https://farmer.grainulation.com",
+  "bugs": {
+    "url": "https://github.com/grainulation/farmer/issues"
+  },
+  "keywords": [
+    "ai",
+    "permissions",
+    "dashboard",
+    "claude-code",
+    "agent",
+    "developer-tools",
+    "grainulation"
+  ],
+  "type": "module",
+  "main": "./lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./server": "./lib/server.js",
+    "./security": "./lib/security.js",
+    "./persistence": "./lib/persistence.js"
+  },
   "bin": {
     "farmer": "./bin/farmer.js"
   },
-  "main": "./lib/server.js",
+  "files": [
+    "bin/",
+    "lib/",
+    "public/",
+    "site/"
+  ],
   "scripts": {
     "start": "node bin/farmer.js start",
     "stop": "node bin/farmer.js stop",
@@ -15,26 +45,6 @@
     "test": "node --test test/"
   },
   "engines": {
-    "node": ">=18.0.0"
-  },
-  "files": [
-    "bin/",
-    "lib/",
-    "public/",
-    "site/",
-    "README.md"
-  ],
-  "keywords": [
-    "ai",
-    "permissions",
-    "dashboard",
-    "claude-code",
-    "agent",
-    "developer-tools"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/grainulation/farmer"
-  },
-  "author": "grainulation contributors"
+    "node": ">=18"
+  }
 }
