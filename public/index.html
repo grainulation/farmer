@@ -49,6 +49,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: nowrap;
     padding: 12px 24px;
     padding-top: calc(12px + env(safe-area-inset-top));
     padding-inline-start: calc(24px + env(safe-area-inset-left));
@@ -60,7 +61,7 @@
     flex-shrink: 0;
   }
   .header h1 { font-size: 18px; font-weight: 800; letter-spacing: -0.03em; background: linear-gradient(135deg, #f0a030, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-  .header .status { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .header .status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
   .header .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); }
   .header .dot.connected { background: var(--green); }
   .trust-badge {
@@ -1103,7 +1104,7 @@
 <div id="live-status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
 <div class="app" id="app">
   <header class="header" role="banner">
-    <h1><svg width="78" height="44" viewBox="0 0 84 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle"><path d="M22,6 L15.5,6 C9.5,11.5 9.5,26.5 15.5,32 L22,32" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="22" y="19" text-anchor="middle" dominant-baseline="central" fill="#3b82f6" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">F</text><text x="27.0" y="19" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">armer</text></svg></h1>
+    <h1><svg width="78" height="44" viewBox="0 0 84 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle"><path d="M22,8 L16,8 C10.5,12.5 10.5,25.5 16,30 L22,30" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="22" y="19" text-anchor="middle" dominant-baseline="central" fill="#3b82f6" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">F</text><text x="27.0" y="19" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">armer</text></svg></h1>
     <div class="status" aria-label="Connection status">
       <div class="dot" id="statusDot" role="status" aria-hidden="true"></div>
       <span id="statusText" role="status" aria-live="polite">Connecting...</span>
@@ -1159,7 +1160,16 @@ const TOKEN = '{{TOKEN}}';
 // Cookie auth is primary (HttpOnly cookie set on login redirect).
 // Token fallback for SSE which doesn't send cookies cross-origin in some browsers.
 const API = (path) => `${location.origin}${path}`;
-const isRequest = (name) => name === 'Request' || name === 'AskUserQuestion';
+const isRequest = (name, item) => name === 'Request' || name === 'AskUserQuestion' || (item && item.isQuestion);
+
+const ICONS = {
+  check: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>',
+  cross: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>',
+  chevDown: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>',
+  chevUp: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 15 12 9 18 15"/></svg>',
+  chevRight: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>',
+  pulse: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="6"/></svg>',
+};
 
 // --- CSRF token (received from server init/state, sent on all mutating requests) ---
 let csrfToken = '';
@@ -1316,7 +1326,7 @@ function tryWebSocket() {
         }
         handleMessage(msg);
         document.getElementById('statusDot').className = 'dot connected';
-        document.getElementById('statusText').textContent = t('Connected (WebSocket)');
+        document.getElementById('statusText').textContent = t('Connected');
       } catch { /* ignore malformed frames */ }
     };
 
@@ -1385,7 +1395,7 @@ function trySSE() {
         updateConnectionBanner(null); // clear any disconnection banner
       }
       document.getElementById('statusDot').className = 'dot connected';
-      document.getElementById('statusText').textContent = t('Connected (SSE)');
+      document.getElementById('statusText').textContent = t('Connected');
     };
     evtSource.onerror = () => {
       evtSource.close();
@@ -1516,7 +1526,7 @@ async function poll() {
       }
     }
     document.getElementById('statusDot').className = 'dot connected';
-    document.getElementById('statusText').textContent = t('Connected (polling)');
+    document.getElementById('statusText').textContent = t('Connected');
   } catch (err) {
     document.getElementById('statusDot').className = 'dot';
     document.getElementById('statusText').textContent = t('Error: ') + (err.message || err);
@@ -1545,13 +1555,13 @@ function handleMessage(msg) {
     case 'permission_request':
       state.pending.push(msg.data);
       updateLiveStatus('New permission request: ' + (msg.data.tool_name || 'unknown'));
-      if (isRequest(msg.data.tool_name || '')) {
+      if (isRequest(msg.data.tool_name || '', msg.data)) {
         // Auto-switch to Requests tab
         activeTab = 'requests';
         document.querySelectorAll('.tab').forEach(tb => tb.classList.toggle('active', tb.dataset.tab === 'requests'));
       }
       {
-        const label = isRequest(msg.data.tool_name) ? 'Question from Claude' : `${msg.data.tool_name} needs approval`;
+        const label = isRequest(msg.data.tool_name, msg.data) ? 'Question from Claude' : `${msg.data.tool_name} needs approval`;
         notify(label, (msg.data.tool_input && msg.data.tool_input.prompt) || formatInput(msg.data.tool_input), msg.data.requestId);
       }
       break;
@@ -1855,8 +1865,8 @@ function renderDesktopSidebar() {
   if (!sidebar) return;
 
   const ss = state.sessions || [];
-  const perms = state.pending.filter(p => !isRequest(p.tool_name || '') && !resolvedRequests.has(p.requestId));
-  const reqs = state.pending.filter(p => isRequest(p.tool_name || '') && !resolvedRequests.has(p.requestId));
+  const perms = state.pending.filter(p => !isRequest(p.tool_name || '', p) && !resolvedRequests.has(p.requestId));
+  const reqs = state.pending.filter(p => isRequest(p.tool_name || '', p) && !resolvedRequests.has(p.requestId));
   const runningAgents = state.agents.filter(a => a.status === 'running').length;
 
   // Session list
@@ -1982,9 +1992,9 @@ function renderDesktopMain() {
   rightPane.style.display = '';
   leftPane.classList.add('desktop-pane-left');
 
-  const allPerms = state.pending.filter(p => !isRequest(p.tool_name || '') && !resolvedRequests.has(p.requestId));
+  const allPerms = state.pending.filter(p => !isRequest(p.tool_name || '', p) && !resolvedRequests.has(p.requestId));
   const perms = filterBySession(allPerms);
-  const allReqs = state.pending.filter(p => isRequest(p.tool_name || '') && !resolvedRequests.has(p.requestId));
+  const allReqs = state.pending.filter(p => isRequest(p.tool_name || '', p) && !resolvedRequests.has(p.requestId));
   const reqs = filterBySession(allReqs);
 
   // r369: dynamic split pane — expand activity when no pending
@@ -2105,8 +2115,8 @@ window.addEventListener('resize', () => {
 });
 
 function updateBadge() {
-  const reqs = state.pending.filter(p => isRequest(p.tool_name || '') && !resolvedRequests.has(p.requestId));
-  const perms = state.pending.filter(p => !isRequest(p.tool_name || '') && !resolvedRequests.has(p.requestId));
+  const reqs = state.pending.filter(p => isRequest(p.tool_name || '', p) && !resolvedRequests.has(p.requestId));
+  const perms = state.pending.filter(p => !isRequest(p.tool_name || '', p) && !resolvedRequests.has(p.requestId));
   const badge = document.getElementById('permBadge');
   badge.style.display = perms.length > 0 ? 'inline-block' : 'none';
   badge.textContent = perms.length;
@@ -2155,7 +2165,7 @@ async function sendFeedback() {
 
 function renderPermissions() {
   const fbHtml = renderFeedbackBox();
-  const allPerms = state.pending.filter(p => !isRequest(p.tool_name || '') && !resolvedRequests.has(p.requestId));
+  const allPerms = state.pending.filter(p => !isRequest(p.tool_name || '', p) && !resolvedRequests.has(p.requestId));
   const perms = filterBySession(allPerms);
   if (perms.length === 0) {
     return `${fbHtml}<div class="empty"><div class="icon" style="font-size:14px;">--</div><p>${t('No pending permissions')}</p><p style="font-size:12px;margin-top:4px;">${t('Claude Code will send requests here when it needs approval')}</p></div>`;
@@ -2169,7 +2179,7 @@ function renderPermissions() {
 }
 
 function renderRequests() {
-  const allReqs = state.pending.filter(p => isRequest(p.tool_name || '') && !resolvedRequests.has(p.requestId));
+  const allReqs = state.pending.filter(p => isRequest(p.tool_name || '', p) && !resolvedRequests.has(p.requestId));
   const reqs = filterBySession(allReqs);
   if (reqs.length === 0) {
     return `<div class="empty"><div class="icon" style="font-size:14px;">--</div><p>${t('No pending requests')}</p><p style="font-size:12px;margin-top:4px;">${t('Questions from Claude Code will appear here for your input')}</p></div>`;
@@ -2244,10 +2254,10 @@ function renderPermissionCard(p) {
       <div class="tool-name">${desc.icon} ${esc(desc.title)} <span class="risk-badge risk-${risk}">${RISK_LABELS[risk]}</span> ${sessionTag(p.session_id)}</div>
       <div class="tool-input" style="font-family:monospace;font-size:12px;background:var(--bg);padding:8px;border-radius:6px;margin:6px 0;word-break:break-all;">${esc(desc.detail)}</div>
       <div class="perm-actions" role="group" aria-label="Actions for ${esc(desc.title)}">
-        <button class="btn btn-allow" onclick="decide('${esc(p.requestId)}', true)" aria-label="${t('Allow')} ${esc(desc.title)}">&#10003; ${t('Allow')}</button>
-        <button class="btn btn-deny" onclick="decide('${esc(p.requestId)}', false)" aria-label="${t('Deny')} ${esc(desc.title)}">&#10005; ${t('Deny')}</button>
+        <button class="btn btn-allow" onclick="decide('${esc(p.requestId)}', true)" aria-label="${t('Allow')} ${esc(desc.title)}">${ICONS.check} ${t('Allow')}</button>
+        <button class="btn btn-deny" onclick="decide('${esc(p.requestId)}', false)" aria-label="${t('Deny')} ${esc(desc.title)}">${ICONS.cross} ${t('Deny')}</button>
         <div class="quick-rules">
-          <button class="quick-rules-btn" onclick="toggleQuickRulesMenu('${esc(p.requestId)}', event)" aria-expanded="${openQuickRules === p.requestId}" aria-haspopup="true" aria-label="Quick rules for ${esc(toolName)}">${t('Quick Rules')} &#9662;</button>
+          <button class="quick-rules-btn" onclick="toggleQuickRulesMenu('${esc(p.requestId)}', event)" aria-expanded="${openQuickRules === p.requestId}" aria-haspopup="true" aria-label="Quick rules for ${esc(toolName)}">${t('Quick Rules')} ${ICONS.chevDown}</button>
           <div class="quick-rules-menu ${openQuickRules === p.requestId ? 'open' : ''}" role="menu" aria-label="Quick rule options">
             <div class="qr-item" role="menuitem" tabindex="0" onclick="addQuickRule('${esc(toolName)}'); decide('${esc(p.requestId)}', true)">${ t('Always allow {tool} this session', { tool: '<strong>' + esc(toolName) + '</strong>' }) }</div>
             ${isReadTool ? `<div class="qr-item" role="menuitem" tabindex="0" onclick="addQuickRuleGroup(['Read','Grep','Glob']); decide('${esc(p.requestId)}', true)">${ t('Always allow all {tools}', { tools: '<strong>' + t('Read tools') + '</strong>' }) }</div>` : ''}
@@ -2374,14 +2384,14 @@ function renderSprintSwitcher() {
     return `
       <div class="sprint-switcher-header" onclick="toggleSprintSwitcher()">
         <span class="active-name">${esc(activeName)}</span>
-        <span class="toggle">${t('{count} sprints', { count: state.sprints.length })} &#9662;</span>
+        <span class="toggle">${t('{count} sprints', { count: state.sprints.length })} ${ICONS.chevDown}</span>
       </div>`;
   }
 
   return `
     <div class="sprint-switcher-header" onclick="toggleSprintSwitcher()">
       <span class="active-name">${esc(activeName)}</span>
-      <span class="toggle">&#9652; ${t('collapse')}</span>
+      <span class="toggle">${ICONS.chevUp} ${t('collapse')}</span>
     </div>
     <div class="sprint-card-list">
       ${state.sprints.map(s => `
@@ -2502,7 +2512,7 @@ function renderSprint() {
             <div style="font-size:14px;font-weight:600;">${a.label}</div>
             <div style="font-size:11px;color:var(--dim);">${a.desc}</div>
           </div>
-          <span style="color:var(--dim);font-size:18px;">&#8250;</span>
+          <span style="color:var(--dim);font-size:18px;">${ICONS.chevRight}</span>
         </a>
       `).join('')}
     </div>
@@ -2574,7 +2584,7 @@ function renderRules() {
               return `
                 <label class="rule-check ${isActive ? 'active' : ''}" onclick="toggleRule('${esc(tool)}')">
                   <input type="checkbox" ${isActive ? 'checked' : ''}>
-                  <span>${isActive ? '&#10003; ' : ''}${esc(tool)}</span>
+                  <span>${isActive ? ICONS.check + ' ' : ''}${esc(tool)}</span>
                 </label>
               `;
             }).join('')}
@@ -2592,7 +2602,7 @@ function renderRules() {
               <div class="active-rule-item">
                 <span class="rule-tool">${esc(r.tool)}</span>
                 ${r.pattern ? `<span class="rule-pattern">${esc(r.pattern)}</span>` : '<span class="rule-pattern">all</span>'}
-                <span class="rule-remove" onclick="removeRule('${esc(r.tool)}', '${esc(r.pattern || '')}')" title="Remove rule" role="button" tabindex="0" aria-label="Remove rule for ${esc(r.tool)}">&#10005;</span>
+                <span class="rule-remove" onclick="removeRule('${esc(r.tool)}', '${esc(r.pattern || '')}')" title="Remove rule" role="button" tabindex="0" aria-label="Remove rule for ${esc(r.tool)}">${ICONS.cross}</span>
               </div>
             `).join('')}
           </div>`
@@ -2632,7 +2642,7 @@ function renderAgents() {
               <div style="font-size:11px;color:var(--dim);margin-top:2px;">${esc(a.id || '').slice(0,12)} · ${t('started')} ${timeAgo(a.startedAt)}</div>
               ${a.prompt ? `<div style="font-size:12px;color:var(--muted);margin-top:4px;max-height:60px;overflow:hidden;">${esc((a.prompt||'').slice(0,200))}</div>` : ''}
             </div>
-            <div style="font-size:20px;animation:pulse 2s infinite;">&#9679;</div>
+            <div style="font-size:20px;animation:pulse 2s infinite;">${ICONS.pulse}</div>
           </div>
         `).join('')}
       </div>
@@ -2646,7 +2656,7 @@ function renderAgents() {
               <span style="font-weight:600;color:var(--muted);">${esc(a.agent_type || a.description || 'Agent')}</span>
               <div style="font-size:11px;color:var(--dim);margin-top:2px;">${esc(a.id || '').slice(0,12)} · ${t('ran')} ${timeAgo(a.startedAt)} ${a.stoppedAt ? '— ' + t('done') + ' ' + timeAgo(a.stoppedAt) : ''}</div>
             </div>
-            <span style="color:var(--green);">&#10003;</span>
+            <span style="color:var(--green);">${ICONS.check}</span>
           </div>
         `).join('')}
       </div>
@@ -2751,7 +2761,7 @@ document.addEventListener('keydown', (e) => {
   // Only operate on desktop split view with pending permissions
   if (!isDesktop() || desktopNavTab) return;
 
-  const pendingPerms = state.pending.filter(p => !isRequest(p.tool_name || '') && !resolvedRequests.has(p.requestId));
+  const pendingPerms = state.pending.filter(p => !isRequest(p.tool_name || '', p) && !resolvedRequests.has(p.requestId));
   const filteredPerms = filterBySession(pendingPerms);
   if (filteredPerms.length === 0) return;
 
@@ -2838,7 +2848,7 @@ fetch('/api/sites?token=' + TOKEN).then(r => r.json()).then(sites => {
     return '<a href="#" onclick="openPreview(\'/sites/' + s.name + '?token=' + TOKEN + '\',\'' + s.name + '\');return false;" style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--glass);backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));border:1px solid var(--glass-border);border-radius:10px;color:var(--text);text-decoration:none;-webkit-tap-highlight-color:rgba(59,130,246,0.2);">' +
       '<div style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;background:' + c + '20;color:' + c + ';flex-shrink:0;">' + (s.name||'?')[0] + '</div>' +
       '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;">' + s.name + '</div><div style="font-size:10px;color:var(--dim);">' + (s.description||'') + '</div></div>' +
-      '<span style="color:var(--dim);font-size:16px;">&#8250;</span></a>';
+      '<span style="color:var(--dim);font-size:16px;">' + ICONS.chevRight + '</span></a>';
   }).join('');
 }).catch(() => {
   const grid = document.getElementById('sitesGrid');
