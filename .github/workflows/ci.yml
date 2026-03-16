@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Verify zero dependencies
+        run: |
+          node -e "
+            const pkg = require('./package.json');
+            const deps = pkg.dependencies ? Object.keys(pkg.dependencies) : [];
+            // farmer allows 'ws' as sole dependency
+            const unexpected = deps.filter(d => d !== 'ws');
+            if (unexpected.length > 0) {
+              console.error('farmer: unexpected dependencies:', unexpected);
+              process.exit(1);
+            }
+            console.log('Dependencies verified (ws only)');
+          "
+      - name: Run tests
+        run: node --test test/
+      - name: CLI help check
+        run: node bin/farmer.js --help
+
+  publish-dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm pack --dry-run

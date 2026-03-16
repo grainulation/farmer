@@ -13,8 +13,18 @@ import { existsSync, readFileSync } from 'node:fs';
 import { FarmerServer } from '../lib/server.js';
 import { PidLock } from '../lib/security.js';
 
+const verbose = process.argv.includes('--verbose');
+function vlog(...a) {
+  if (!verbose) return;
+  const ts = new Date().toISOString();
+  process.stderr.write(`[${ts}] farmer: ${a.join(' ')}\n`);
+}
+export { vlog, verbose };
+
 const args = process.argv.slice(2);
 const command = args[0] || 'start';
+
+vlog('startup', `command=${command}`, `cwd=${process.cwd()}`);
 
 function arg(name, fallback) {
   const i = args.indexOf(`--${name}`);
@@ -44,6 +54,7 @@ Options (start):
   --compilation <path> Path to compilation.json (enables sprint status)
   --no-tunnel          Skip cloudflared tunnel auto-start
   --no-open            Don't open browser on start
+  --verbose            Enable verbose logging to stderr
 
 Examples:
   farmer start --port 8080
@@ -95,7 +106,7 @@ switch (command) {
         console.log(`Farmer (PID ${pid}) is not running. Cleaning stale PID file.`);
         pidLock.release();
       } else {
-        console.error(`Failed to stop Farmer: ${err.message}`);
+        console.error(`farmer: failed to stop: ${err.message}`);
         process.exit(1);
       }
     }
@@ -120,7 +131,7 @@ switch (command) {
   }
 
   default:
-    console.error(`Unknown command: ${command}`);
+    console.error(`farmer: unknown command: ${command}`);
     console.error('Usage: farmer <start|stop|status> [options]');
     process.exit(1);
 }
