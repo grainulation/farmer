@@ -27,7 +27,8 @@
     ".": "./lib/index.js",
     "./server": "./lib/server.js",
     "./security": "./lib/security.js",
-    "./persistence": "./lib/persistence.js"
+    "./persistence": "./lib/persistence.js",
+    "./compact-context": "./lib/compact-context.js"
   },
   "bin": {
     "farmer": "bin/farmer.js"
@@ -36,7 +37,8 @@
     "bin/",
     "lib/",
     "public/",
-    "site/"
+    "site/",
+    "templates/"
   ],
   "scripts": {
     "start": "node bin/farmer.js start",

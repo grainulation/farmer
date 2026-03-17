@@ -1,0 +1,50 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat | curl -s -X POST http://127.0.0.1:9090/hooks/permission -H 'Content-Type: application/json' --data-binary @- 2>/dev/null || true",
+            "timeout": 120
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat | curl -s -X POST http://127.0.0.1:9090/hooks/activity -H 'Content-Type: application/json' --data-binary @- 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat | curl -s -X POST http://127.0.0.1:9090/hooks/notification -H 'Content-Type: application/json' --data-binary @- 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat | curl -s -X POST http://127.0.0.1:9090/hooks/stop -H 'Content-Type: application/json' --data-binary @- 2>/dev/null || true",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
