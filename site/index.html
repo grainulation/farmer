@@ -180,10 +180,15 @@ nav .container{display:flex;align-items:center;justify-content:space-between}
 
 /* FAQ */
 .faq{padding:80px 0}
-.faq-grid{display:grid;gap:16px;max-width:720px;margin:0 auto}
-.faq-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px 28px}
-.faq-item h3{font-size:.9375rem;font-weight:700;margin-bottom:12px;color:var(--text)}
-.faq-item p{font-size:.875rem;color:var(--text-2);line-height:1.6}
+.faq-list{max-width:700px;margin:0 auto}
+.faq-item{border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden}
+.faq-q{padding:20px 24px;font-weight:700;font-size:.9375rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:16px;background:var(--surface);transition:background .2s;user-select:none}
+.faq-q:hover{background:var(--surface-hover)}
+.faq-q svg{flex-shrink:0;transition:transform .25s var(--ease);color:var(--text-3)}
+.faq-item.open .faq-q svg{transform:rotate(180deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .35s var(--ease),padding .35s var(--ease)}
+.faq-item.open .faq-a{max-height:300px;padding:12px 24px 20px}
+.faq-a p{color:var(--text-2);font-size:.875rem;line-height:1.65}
 
 /* Ecosystem */
 .ecosystem{padding:80px 0}
@@ -216,7 +221,7 @@ footer p{margin-bottom:6px}
   .container{padding:0 16px}
   section,.what-is,.quickstart,.features,.faq,.ecosystem,.example,.protocol,.architecture,.trust{padding:40px 0}.hero{padding:48px 0 32px}
   .what-box{padding:28px 20px}
-  .faq-item{padding:24px 20px}
+  .faq-q{padding:18px 20px}
   .mockup-body{padding:16px}
   .mock-cmd{font-size:.65rem}
   .qs-step{padding:20px 16px}
@@ -612,22 +617,42 @@ Sessions: 1 active</div>
 <section class="faq" id="faq">
   <div class="container">
     <div class="section-label rv" style="text-align:center">Frequently asked questions</div>
-    <div class="faq-grid">
+    <div class="faq-list">
       <div class="faq-item rv rv-d1">
-        <h3>Does this only work with Claude Code?</h3>
-        <p>No. <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong> ships with a Claude Code adapter, but the architecture is agent-agnostic. Any tool that can POST a JSON permission request to an HTTP endpoint can use <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong>. Write an adapter for your agent and plug it in.</p>
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+          Does this only work with Claude Code?
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-a">
+          <p>No. <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong> ships with a Claude Code adapter, but the architecture is agent-agnostic. Any tool that can POST a JSON permission request to an HTTP endpoint can use <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong>. Write an adapter for your agent and plug it in.</p>
+        </div>
       </div>
       <div class="faq-item rv rv-d2">
-        <h3>How do I access it from my phone?</h3>
-        <p>Three options: (1) If your phone is on the same network, bind to 0.0.0.0 and use your machine's local IP. (2) Use a Cloudflare tunnel -- <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong> has built-in support. (3) Use ngrok, tailscale, or any tunnel of your choice. The token in the URL handles authentication.</p>
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+          How do I access it from my phone?
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-a">
+          <p>Three options: (1) If your phone is on the same network, bind to 0.0.0.0 and use your machine's local IP. (2) Use a Cloudflare tunnel -- <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong> has built-in support. (3) Use ngrok, tailscale, or any tunnel of your choice. The token in the URL handles authentication.</p>
+        </div>
       </div>
       <div class="faq-item rv rv-d3">
-        <h3>What happens if I don't respond to a permission request?</h3>
-        <p>The agent blocks. It waits until you approve or deny. There is no timeout by default -- your agent will not proceed without your decision. You can configure auto-approve rules per tool type via trust levels.</p>
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+          What happens if I don't respond to a permission request?
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-a">
+          <p>The agent blocks. It waits until you approve or deny. There is no timeout by default -- your agent will not proceed without your decision. You can configure auto-approve rules per tool type via trust levels.</p>
+        </div>
       </div>
       <div class="faq-item rv rv-d4">
-        <h3>Does this work without <strong style="color:#fff;font-size:110%"><span style="color:#fbbf24">w</span>heat</strong>?</h3>
-        <p>Yes. <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong> works with any Claude Code session, not just <strong style="color:#fff;font-size:110%"><span style="color:#fbbf24">w</span>heat</strong> sprints. The sprint detection features are a bonus -- the core permission management works independently.</p>
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+          Does this work without <strong style="color:#fff;font-size:110%"><span style="color:#fbbf24">w</span>heat</strong>?
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="faq-a">
+          <p>Yes. <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong> works with any Claude Code session, not just <strong style="color:#fff;font-size:110%"><span style="color:#fbbf24">w</span>heat</strong> sprints. The sprint detection features are a bonus -- the core permission management works independently.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -635,7 +660,7 @@ Sessions: 1 active</div>
 
 <hr class="sep">
 
-<section class="ecosystem">
+<section class="ecosystem" id="ecosystem">
   <div class="container" style="text-align:center">
     <h2 class="section-title rv rv-d1">The ecosystem</h2>
     <p class="section-sub rv rv-d2" style="margin-left:auto;margin-right:auto"><strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong> supervises AI agents across the entire <strong style="color:#fff;font-size:110%"><span style="color:#9ca3af">gr</span>ainulation</strong> ecosystem -- or any Claude Code session.</p>
