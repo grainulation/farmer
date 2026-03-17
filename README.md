@@ -8,7 +8,7 @@ Farmer sits between your AI coding agent (Claude Code, etc.) and your terminal, 
 
 - **Desktop-first split-pane UI** — session sidebar, permission cards, activity feed
 - **Agent-agnostic hook protocol** — Claude Code adapter ships first; write your own for other agents
-- **Zero npm dependencies** — Node built-in modules only
+- **Minimal dependencies** — only `ws` for WebSocket support
 - **Security** — token auth, CSRF protection, CSP headers, audit logging
 - **Multi-session** — manage multiple AI sessions from one dashboard
 - **Trust tiers** — paranoid (approve everything), standard (auto-approve reads), autonomous (auto-approve most)
