@@ -473,57 +473,64 @@ Sessions: 1 active</div>
     <h2 class="section-title rv rv-d1" style="text-align:center">Agent-agnostic by design</h2>
     <p class="section-sub rv rv-d2" style="text-align:center;margin-left:auto;margin-right:auto">The adapter pattern separates the protocol layer from agent-specific details. Swap adapters to support any AI coding agent.</p>
 
-    <div class="arch-box rv rv-d3">
-      <div class="arch-cols">
-        <div class="arch-col">
-          <div class="arch-col-icon" style="background:rgba(251,146,60,.12);color:var(--orange)">A</div>
-          <div class="arch-col-title">AI Agent</div>
-          <div class="arch-col-sub">Claude Code, any agent</div>
-        </div>
-        <div class="arch-col">
-          <div class="arch-col-icon" style="background:rgba(59,130,246,.12);color:var(--accent)">F</div>
-          <div class="arch-col-title">Farmer Server</div>
-          <div class="arch-col-sub">Node.js, port 9090</div>
-        </div>
-        <div class="arch-col">
-          <div class="arch-col-icon" style="background:rgba(52,211,153,.12);color:var(--green)">D</div>
-          <div class="arch-col-title">Dashboard</div>
-          <div class="arch-col-sub">Browser / Phone</div>
-        </div>
-      </div>
-      <div class="arch-flow">
-        <div class="arch-step">
-          <div class="arch-step-left"><span class="arch-step-label">Agent requests</span></div>
-          <div class="arch-step-arrow"><span class="hl-orange">POST /hooks/permission</span> &#8594;</div>
-          <div class="arch-step-right"><span class="hl-dim">{tool, input, session}</span></div>
-        </div>
-        <div class="arch-step">
-          <div class="arch-step-left"></div>
-          <div class="arch-step-arrow"><span class="hl-green">WebSocket push</span> &#8594;</div>
-          <div class="arch-step-right"><span class="arch-step-label">Card appears</span> <span class="hl-dim">{pending}</span></div>
-        </div>
-        <div class="arch-step">
-          <div class="arch-step-left"></div>
-          <div class="arch-step-arrow">&#8592; <span class="hl-accent">User taps Approve</span></div>
-          <div class="arch-step-right"><span class="arch-step-label">Decision sent</span></div>
-        </div>
-        <div class="arch-step">
-          <div class="arch-step-left"><span class="arch-step-label">Agent unblocks</span></div>
-          <div class="arch-step-arrow">&#8592; <span class="hl-green">200 {approve}</span></div>
-          <div class="arch-step-right"></div>
-        </div>
-        <div class="arch-step">
-          <div class="arch-step-left"><span class="arch-step-label">Result logged</span></div>
-          <div class="arch-step-arrow"><span class="hl-purple">POST /hooks/result</span> &#8594; &#8594;</div>
-          <div class="arch-step-right"><span class="arch-step-label">Card updates</span> <span class="hl-dim">{completed}</span></div>
-        </div>
-        <div class="arch-divider">SSE fallback for clients without WebSocket</div>
-        <div class="arch-step">
-          <div class="arch-step-left"></div>
-          <div class="arch-step-arrow"><span class="hl-red">GET /events</span> &#8594;</div>
-          <div class="arch-step-right"><span class="arch-step-label">EventSource stream</span></div>
-        </div>
-      </div>
+    <div class="arch-box rv rv-d3" style="padding:24px 16px">
+      <svg viewBox="0 0 700 420" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
+        <!-- Column headers -->
+        <text x="120" y="28" text-anchor="middle" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="13" font-weight="700">AI Agent</text>
+        <text x="120" y="44" text-anchor="middle" fill="#6b7280" font-family="-apple-system,system-ui,sans-serif" font-size="10">Claude Code, any agent</text>
+        <text x="350" y="28" text-anchor="middle" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="13" font-weight="700">Farmer Server</text>
+        <text x="350" y="44" text-anchor="middle" fill="#6b7280" font-family="-apple-system,system-ui,sans-serif" font-size="10">Node.js, port 9090</text>
+        <text x="580" y="28" text-anchor="middle" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="13" font-weight="700">Dashboard</text>
+        <text x="580" y="44" text-anchor="middle" fill="#6b7280" font-family="-apple-system,system-ui,sans-serif" font-size="10">Browser / Phone</text>
+
+        <!-- Swimlane lines -->
+        <line x1="120" y1="56" x2="120" y2="410" stroke="#1e293b" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="350" y1="56" x2="350" y2="410" stroke="#1e293b" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="580" y1="56" x2="580" y2="410" stroke="#1e293b" stroke-width="1" stroke-dasharray="4,4"/>
+
+        <!-- Step 1: Agent sends permission request -->
+        <line x1="130" y1="85" x2="340" y2="85" stroke="#fb923c" stroke-width="1.5"/>
+        <polygon points="340,81 348,85 340,89" fill="#fb923c"/>
+        <text x="235" y="78" text-anchor="middle" fill="#fb923c" font-family="ui-monospace,monospace" font-size="10" font-weight="600">POST /hooks/permission</text>
+        <text x="235" y="100" text-anchor="middle" fill="#6b7280" font-family="ui-monospace,monospace" font-size="9">{tool, input, session}</text>
+
+        <!-- Step 2: Server pushes card to dashboard -->
+        <line x1="360" y1="135" x2="570" y2="135" stroke="#34d399" stroke-width="1.5"/>
+        <polygon points="570,131 578,135 570,139" fill="#34d399"/>
+        <text x="465" y="128" text-anchor="middle" fill="#34d399" font-family="ui-monospace,monospace" font-size="10" font-weight="600">WebSocket push</text>
+        <text x="465" y="150" text-anchor="middle" fill="#6b7280" font-family="ui-monospace,monospace" font-size="9">{card: pending}</text>
+
+        <!-- Step 3: User approves -->
+        <line x1="570" y1="185" x2="360" y2="185" stroke="#3b82f6" stroke-width="1.5"/>
+        <polygon points="360,181 352,185 360,189" fill="#3b82f6"/>
+        <text x="465" y="178" text-anchor="middle" fill="#3b82f6" font-family="-apple-system,system-ui,sans-serif" font-size="10" font-weight="600">User taps Approve</text>
+        <text x="465" y="200" text-anchor="middle" fill="#6b7280" font-family="ui-monospace,monospace" font-size="9">{decision: approve}</text>
+
+        <!-- Step 4: Server responds to agent -->
+        <line x1="340" y1="235" x2="130" y2="235" stroke="#34d399" stroke-width="1.5"/>
+        <polygon points="130,231 122,235 130,239" fill="#34d399"/>
+        <text x="235" y="228" text-anchor="middle" fill="#34d399" font-family="ui-monospace,monospace" font-size="10" font-weight="600">200 {decision: approve}</text>
+        <text x="235" y="250" text-anchor="middle" fill="#6b7280" font-family="-apple-system,system-ui,sans-serif" font-size="9">Agent unblocks, tool executes</text>
+
+        <!-- Step 5: Result posted back -->
+        <line x1="130" y1="285" x2="340" y2="285" stroke="#a78bfa" stroke-width="1.5"/>
+        <polygon points="340,281 348,285 340,289" fill="#a78bfa"/>
+        <line x1="360" y1="285" x2="570" y2="285" stroke="#34d399" stroke-width="1.5"/>
+        <polygon points="570,281 578,285 570,289" fill="#34d399"/>
+        <text x="235" y="278" text-anchor="middle" fill="#a78bfa" font-family="ui-monospace,monospace" font-size="10" font-weight="600">POST /hooks/result</text>
+        <text x="465" y="278" text-anchor="middle" fill="#34d399" font-family="ui-monospace,monospace" font-size="10" font-weight="600">WebSocket push</text>
+        <text x="350" y="300" text-anchor="middle" fill="#6b7280" font-family="ui-monospace,monospace" font-size="9">{tool, output} -> {card: completed}</text>
+
+        <!-- SSE fallback divider -->
+        <line x1="40" y1="335" x2="660" y2="335" stroke="#1e293b" stroke-width="1" stroke-dasharray="6,4"/>
+        <text x="350" y="352" text-anchor="middle" fill="#6b7280" font-family="-apple-system,system-ui,sans-serif" font-size="10">SSE fallback for clients without WebSocket</text>
+
+        <!-- Step 6: SSE stream -->
+        <line x1="360" y1="380" x2="570" y2="380" stroke="#f87171" stroke-width="1.5"/>
+        <polygon points="570,376 578,380 570,384" fill="#f87171"/>
+        <text x="465" y="373" text-anchor="middle" fill="#f87171" font-family="ui-monospace,monospace" font-size="10" font-weight="600">GET /events (SSE)</text>
+        <text x="465" y="395" text-anchor="middle" fill="#6b7280" font-family="ui-monospace,monospace" font-size="9">EventSource stream</text>
+      </svg>
     </div>
 
     <div style="margin-top:24px;text-align:center" class="rv rv-d4">
