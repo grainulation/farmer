@@ -42,7 +42,7 @@
     "start": "node bin/farmer.js start",
     "stop": "node bin/farmer.js stop",
     "status": "node bin/farmer.js status",
-    "test": "node --test test/"
+    "test": "node --test test/adapters.test.js test/persistence.test.js test/security.test.js"
   },
   "dependencies": {
     "ws": "^8.0.0"
