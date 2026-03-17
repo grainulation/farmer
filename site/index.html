@@ -198,9 +198,9 @@ nav .container{display:flex;align-items:center;justify-content:space-between}
 .faq{padding:80px 0}
 .faq-list{max-width:700px;margin:0 auto}
 .faq-item{border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden}
-.faq-q{padding:20px 24px;font-weight:700;font-size:.9375rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:16px;background:var(--surface);transition:background .2s;user-select:none}
+.faq-q{padding:20px 24px;font-weight:700;font-size:.9375rem;cursor:pointer;display:flex;align-items:center;gap:12px;background:var(--surface);transition:background .2s;user-select:none}
 .faq-q:hover{background:var(--surface-hover)}
-.faq-q svg{flex-shrink:0;transition:transform .25s var(--ease);color:var(--text-3)}
+.faq-q svg{flex-shrink:0;margin-left:auto;transition:transform .25s var(--ease);color:var(--text-3)}
 .faq-item.open .faq-q svg{transform:rotate(180deg)}
 .faq-a{max-height:0;overflow:hidden;transition:max-height .35s var(--ease),padding .35s var(--ease)}
 .faq-item.open .faq-a{max-height:300px;padding:12px 24px 20px}
@@ -678,7 +678,7 @@ Sessions: 1 active</div>
       </div>
       <div class="faq-item rv rv-d4">
         <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
-          Does this work without <strong style="color:#fff;font-size:110%"><span style="color:#fbbf24">w</span>heat</strong>?
+          <span>Does this work without <strong style="color:#fff"><span style="color:#fbbf24">w</span>heat</strong>?</span>
           <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
         <div class="faq-a">
