@@ -1,8 +1,12 @@
-# @grainulation/farmer
+<p align="center">
+  <img src="site/wordmark.svg" alt="Farmer" width="400">
+</p>
 
-[![npm version](https://img.shields.io/npm/v/@grainulation/farmer)](https://www.npmjs.com/package/@grainulation/farmer) [![npm downloads](https://img.shields.io/npm/dm/@grainulation/farmer)](https://www.npmjs.com/package/@grainulation/farmer) [![license](https://img.shields.io/npm/l/@grainulation/farmer)](https://github.com/grainulation/farmer/blob/main/LICENSE) [![node](https://img.shields.io/node/v/@grainulation/farmer)](https://nodejs.org) [![CI](https://github.com/grainulation/farmer/actions/workflows/ci.yml/badge.svg)](https://github.com/grainulation/farmer/actions)
+<p align="center">
+  <a href="https://www.npmjs.com/package/@grainulation/farmer"><img src="https://img.shields.io/npm/v/@grainulation/farmer" alt="npm version"></a> <a href="https://www.npmjs.com/package/@grainulation/farmer"><img src="https://img.shields.io/npm/dm/@grainulation/farmer" alt="npm downloads"></a> <a href="https://github.com/grainulation/farmer/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@grainulation/farmer" alt="license"></a> <a href="https://nodejs.org"><img src="https://img.shields.io/node/v/@grainulation/farmer" alt="node"></a> <a href="https://github.com/grainulation/farmer/actions"><img src="https://github.com/grainulation/farmer/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+</p>
 
-**Approve AI agent tool calls from anywhere.**
+<p align="center"><strong>Approve AI agent tool calls from anywhere.</strong></p>
 
 Farmer sits between your AI coding agent and your terminal, giving you a visual dashboard to approve, deny, or respond to tool calls in real time. Desktop and mobile.
 
