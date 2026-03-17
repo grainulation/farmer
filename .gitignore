@@ -6,3 +6,4 @@ node_modules/
 .farmer-feedback
 .farmer.pid
 .farmer-audit*.jsonl
+package-lock.json
