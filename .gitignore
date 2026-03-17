@@ -1,0 +1,8 @@
+node_modules/
+.DS_Store
+.farmer-state.json
+.farmer-config.json
+.farmer-token
+.farmer-feedback
+.farmer.pid
+.farmer-audit*.jsonl
