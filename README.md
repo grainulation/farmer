@@ -1,21 +1,10 @@
 # @grainulation/farmer
 
-Desktop-first permission dashboard for AI coding agents.
+[![npm version](https://img.shields.io/npm/v/@grainulation/farmer)](https://www.npmjs.com/package/@grainulation/farmer) [![npm downloads](https://img.shields.io/npm/dm/@grainulation/farmer)](https://www.npmjs.com/package/@grainulation/farmer) [![license](https://img.shields.io/npm/l/@grainulation/farmer)](https://github.com/grainulation/farmer/blob/main/LICENSE) [![node](https://img.shields.io/node/v/@grainulation/farmer)](https://nodejs.org) [![CI](https://github.com/grainulation/farmer/actions/workflows/ci.yml/badge.svg)](https://github.com/grainulation/farmer/actions)
 
-Farmer sits between your AI coding agent (Claude Code, etc.) and your terminal, giving you a visual dashboard to approve, deny, or respond to tool calls in real time.
+**Approve AI agent tool calls from anywhere.**
 
-## Features
-
-- **Desktop-first split-pane UI** — session sidebar, permission cards, activity feed
-- **Agent-agnostic hook protocol** — Claude Code adapter ships first; write your own for other agents
-- **Minimal dependencies** — only `ws` for WebSocket support
-- **Security** — token auth, CSRF protection, CSP headers, audit logging
-- **Multi-session** — manage multiple AI sessions from one dashboard
-- **Trust tiers** — paranoid (approve everything), standard (auto-approve reads), autonomous (auto-approve most)
-- **PID lock** — prevents duplicate server instances
-- **Stale server guard** — auto-approves when no dashboard is connected (prevents CLI blocking)
-- **AskUserQuestion** — deny-to-respond pattern lets you answer agent questions from the dashboard
-- **Data persistence** — activity and messages survive server restarts
+Farmer sits between your AI coding agent and your terminal, giving you a visual dashboard to approve, deny, or respond to tool calls in real time. Desktop and mobile.
 
 ## Install
 
@@ -23,21 +12,27 @@ Farmer sits between your AI coding agent (Claude Code, etc.) and your terminal, 
 npm install -g @grainulation/farmer
 ```
 
-## Quick Start
+## Quick start
 
 ```bash
 # Start the dashboard
-npx @grainulation/farmer start --port 9090
+farmer start --port 9090
 
-# The token URL is printed to the terminal
-# Open it in your browser
-
+# The token URL is printed to the terminal -- open it in your browser
 # Configure Claude Code hooks to point at Farmer:
-# http://localhost:9090/hooks/permission
-# http://localhost:9090/hooks/activity
-# http://localhost:9090/hooks/notification
-# http://localhost:9090/hooks/lifecycle
+farmer start  # prints hook configuration instructions
 ```
+
+## Features
+
+- **Desktop + mobile dashboard** -- session sidebar, permission cards, activity feed
+- **Agent-agnostic hook protocol** -- Claude Code adapter ships first; write your own for other agents
+- **Multi-session** -- manage multiple AI sessions from one dashboard
+- **Trust tiers** -- paranoid (approve everything), standard (auto-approve reads), autonomous (auto-approve most)
+- **AskUserQuestion** -- deny-to-respond pattern lets you answer agent questions from the dashboard
+- **Security** -- token auth, CSRF protection, CSP headers, audit logging
+- **Data persistence** -- activity and messages survive server restarts
+- **Stale server guard** -- auto-approves when no dashboard is connected (prevents CLI blocking)
 
 ## CLI
 
@@ -47,20 +42,18 @@ farmer stop
 farmer status
 ```
 
-## Hook Protocol
+## Hook protocol
 
 Farmer exposes four hook endpoints. All accept POST with JSON body, localhost only:
 
 | Endpoint | Purpose |
 |---|---|
-| `/hooks/permission` | Tool permission requests (blocking — waits for approve/deny) |
+| `/hooks/permission` | Tool permission requests (blocking -- waits for approve/deny) |
 | `/hooks/activity` | Tool completion events (non-blocking) |
 | `/hooks/notification` | Messages, questions, agent events (non-blocking) |
 | `/hooks/lifecycle` | Session start/end events |
 
-See `docs/hook-protocol.md` for the full specification.
-
-## Writing an Adapter
+## Writing an adapter
 
 To support a new AI agent, extend `BaseAdapter` in `lib/adapters/base.js`:
 
@@ -77,20 +70,33 @@ class MyAgentAdapter extends BaseAdapter {
 }
 ```
 
-See `docs/adapter-guide.md` for details.
-
 ## Architecture
 
 ```
 bin/farmer.js          CLI entry point (start/stop/status)
 lib/server.js          Core HTTP + WebSocket server
-lib/adapters/base.js   Agent adapter interface
-lib/adapters/claude-code.js  Claude Code adapter
+lib/adapters/          Agent adapter interface + Claude Code adapter
 lib/persistence.js     State persistence (atomic write, debounced)
 lib/security.js        Token auth, CSRF, CSP, PID lock, audit log
-public/index.html      Desktop-first dashboard (inline JS)
-public/mobile.css      Mobile responsive overrides
+public/index.html      Dashboard (inline JS, no build step)
 ```
+
+## Zero dependencies
+
+One exception: `ws` for WebSocket support. Everything else is Node built-ins.
+
+## Part of the grainulation ecosystem
+
+| Tool | Role |
+|------|------|
+| [wheat](https://github.com/grainulation/wheat) | Research engine -- grow structured evidence |
+| **farmer** | Permission dashboard -- approve AI actions in real time |
+| [barn](https://github.com/grainulation/barn) | Shared tools -- templates, validators, sprint detection |
+| [mill](https://github.com/grainulation/mill) | Format conversion -- export to PDF, CSV, slides, 24 formats |
+| [silo](https://github.com/grainulation/silo) | Knowledge storage -- reusable claim libraries and packs |
+| [harvest](https://github.com/grainulation/harvest) | Analytics -- cross-sprint patterns and prediction scoring |
+| [orchard](https://github.com/grainulation/orchard) | Orchestration -- multi-sprint coordination and dependencies |
+| [grainulation](https://github.com/grainulation/grainulation) | Unified CLI -- single entry point to the ecosystem |
 
 ## License
 
