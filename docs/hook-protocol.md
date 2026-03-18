@@ -110,7 +110,7 @@ These endpoints require token authentication (cookie or URL param) and CSRF toke
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/events` | SSE stream (fallback for WebSocket) |
+| GET | `/events` | SSE stream (real-time push) |
 | GET | `/api/state` | Full current state |
 | POST | `/api/decide` | Approve/deny a pending permission |
 | POST | `/api/trust-level` | Set trust level |
@@ -118,12 +118,6 @@ These endpoints require token authentication (cookie or URL param) and CSRF toke
 | POST | `/api/message` | Relay a message (localhost only) |
 | POST | `/api/admin/rotate-token` | Rotate auth token |
 
-## WebSocket
+## SSE
 
-Connect to `/ws` and send the auth token as the first message:
-
-```json
-{"type": "auth", "token": "your-token-here"}
-```
-
-On success, you receive an `init` message with full state. Subsequent messages are pushed in real time.
+Connect to `/events?token=your-token-here` to receive real-time push updates. On connect, you receive an `init` message with full state. Subsequent messages are pushed as SSE `data:` frames. Polling via `/api/state` serves as automatic fallback.

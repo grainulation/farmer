@@ -292,6 +292,9 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
   }
   .btn-allow { background: var(--green); color: #000; }
   .btn-allow:hover { filter: brightness(1.1); transform: translateY(-1px); }
@@ -323,13 +326,13 @@
     right: 0;
     bottom: 100%;
     margin-bottom: 4px;
-    background: var(--bg2);
+    background: #1e293b;
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 6px 0;
     min-width: 260px;
     z-index: 100;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
   }
   .quick-rules-menu.open { display: block; }
   .quick-rules-menu .qr-item {
@@ -1636,10 +1639,9 @@ function sessionTag(sessionId) {
   return `<span class="session-tag"><span class="sdot" style="background:${sessionColor(sessionId)}"></span>${esc(displayLabel)}</span>`;
 }
 
-// --- Connection: WebSocket > SSE > polling (cascade fallback) ---
+// --- Connection: SSE + polling ---
 let pollInterval = null;
-let ws = null;
-let liveTransport = null; // 'ws' | 'sse' | null
+let liveTransport = null; // 'sse' | null
 
 function connect() {
   // Always start polling immediately as baseline
@@ -1647,93 +1649,11 @@ function connect() {
   pollInterval = setInterval(poll, 2000);
   setInterval(tickCountdowns, 1000);
 
-  // Try WebSocket first (works through Cloudflare tunnels)
-  tryWebSocket();
+  // SSE for real-time push
+  trySSE();
 }
 
-let wsRetryCount = 0;
-const WS_RETRY_MAX = 5;
-const WS_RETRY_BASE_MS = 1000;
-let wsRetryTimer = null;
-
-function tryWebSocket() {
-  try {
-    const wsProto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    // x005: no token in URL — authenticate via first message after connect
-    const wsUrl = `${wsProto}//${location.host}/ws`;
-    ws = new WebSocket(wsUrl);
-
-    ws.onopen = () => {
-      // x005: send token as first message for authentication
-      ws.send(JSON.stringify({ type: 'auth', token: TOKEN }));
-    };
-
-    ws.onmessage = (e) => {
-      try {
-        const msg = JSON.parse(e.data);
-        if (msg.type === 'error') {
-          // Auth failed or server error
-          console.warn('WS error:', msg.data);
-          try { ws.close(); } catch {}
-          return;
-        }
-        // Successfully receiving data means we're authenticated
-        if (liveTransport !== 'ws') {
-          liveTransport = 'ws';
-          wsRetryCount = 0; // reset backoff on successful connection
-          updateConnectionBanner(null); // p065: clear disconnection banner
-        }
-        handleMessage(msg);
-        document.getElementById('statusDot').className = 'dot connected';
-        document.getElementById('statusText').textContent = t('Connected');
-      } catch { /* ignore malformed frames */ }
-    };
-
-    ws.onclose = () => {
-      const wasWs = liveTransport === 'ws';
-      if (wasWs) liveTransport = null;
-      ws = null;
-      // x009: retry WebSocket with exponential backoff before falling to SSE
-      scheduleWsRetry(wasWs);
-    };
-
-    ws.onerror = () => {
-      liveTransport = null;
-      try { ws.close(); } catch {}
-      ws = null;
-      // x009: retry handled by onclose (which fires after onerror)
-    };
-  } catch {
-    // WebSocket constructor failed — schedule retry or fall back to SSE
-    scheduleWsRetry(false);
-  }
-}
-
-// x009+p065: exponential backoff with jitter for WebSocket reconnection
-function scheduleWsRetry(hadConnection) {
-  if (wsRetryTimer) return; // already scheduled
-  if (wsRetryCount >= WS_RETRY_MAX) {
-    // Exhausted retries — fall back to SSE
-    wsRetryCount = 0;
-    updateConnectionBanner('disconnected', 0, 0); // briefly show before SSE takes over
-    trySSE();
-    return;
-  }
-  const baseDelay = WS_RETRY_BASE_MS * Math.pow(2, wsRetryCount);
-  const jitter = Math.random() * baseDelay * 0.3; // p065: up to 30% jitter
-  const delay = baseDelay + jitter;
-  wsRetryCount++;
-  if (hadConnection) updateConnectionBanner('disconnected', wsRetryCount, WS_RETRY_MAX);
-  document.getElementById('statusDot').className = 'dot';
-  document.getElementById('statusText').textContent = t('Reconnecting WS ({count}/{max})...', { count: wsRetryCount, max: WS_RETRY_MAX });
-  wsRetryTimer = setTimeout(() => {
-    wsRetryTimer = null;
-    if (liveTransport === 'ws') return; // already reconnected
-    tryWebSocket();
-  }, delay);
-}
-
-// p065: SSE reconnect with exponential backoff + jitter
+// SSE reconnect with exponential backoff + jitter
 let sseRetryCount = 0;
 const SSE_RETRY_MAX = 5;
 const SSE_RETRY_BASE_MS = 1000;
@@ -1741,8 +1661,6 @@ const SSE_RETRY_MAX_MS = 30000;
 let sseRetryTimer = null;
 
 function trySSE() {
-  // Don't try SSE if WebSocket is already connected
-  if (liveTransport === 'ws') return;
   try {
     evtSource = new EventSource(`${location.origin}/events?token=${TOKEN}`);
     evtSource.onmessage = (e) => {
@@ -1785,7 +1703,7 @@ function scheduleSSERetry() {
   document.getElementById('statusText').textContent = t('Reconnecting SSE ({count}/{max})...', { count: sseRetryCount, max: SSE_RETRY_MAX });
   sseRetryTimer = setTimeout(() => {
     sseRetryTimer = null;
-    if (liveTransport === 'sse' || liveTransport === 'ws') return;
+    if (liveTransport === 'sse') return;
     trySSE();
   }, delay);
 }
@@ -1826,11 +1744,9 @@ function updateConnectionBanner(state, attempt, max) {
 
 function manualReconnect() {
   sseRetryCount = 0;
-  wsRetryCount = 0;
   updateConnectionBanner(null);
-  if (wsRetryTimer) { clearTimeout(wsRetryTimer); wsRetryTimer = null; }
   if (sseRetryTimer) { clearTimeout(sseRetryTimer); sseRetryTimer = null; }
-  tryWebSocket();
+  trySSE();
 }
 
 let prevPendingIds = new Set();
@@ -2397,8 +2313,8 @@ function renderDesktopMain() {
   if (reqs.length > 0) {
     leftContent += reqs.map(p => {
       const ti = p.tool_input || {};
-      const prompt = ti.prompt || p.prompt || (ti.questions && ti.questions[0] && ti.questions[0].question) || '';
-      const options = p.options || (ti.questions && ti.questions[0] && ti.questions[0].options) || [];
+      const prompt = ti.prompt || ti.question || p.prompt || (ti.questions && ti.questions[0] && ti.questions[0].question) || '';
+      const options = p.options || ti.options || (ti.questions && ti.questions[0] && ti.questions[0].options) || [];
       const isNew = !seenCardIds.has(p.requestId);
       const elapsed = Math.floor((Date.now() - (p.timestamp || Date.now())) / 1000);
       const remaining = Math.max(0, 120 - elapsed);
@@ -2564,8 +2480,8 @@ function renderRequests() {
   }
   return reqs.map(p => {
     const ti = p.tool_input || {};
-    const prompt = ti.prompt || p.prompt || (ti.questions && ti.questions[0] && ti.questions[0].question) || '';
-    const options = p.options || (ti.questions && ti.questions[0] && ti.questions[0].options) || [];
+    const prompt = ti.prompt || ti.question || p.prompt || (ti.questions && ti.questions[0] && ti.questions[0].question) || '';
+    const options = p.options || ti.options || (ti.questions && ti.questions[0] && ti.questions[0].options) || [];
     const isNew = !seenCardIds.has(p.requestId);
     const elapsed = Math.floor((Date.now() - (p.timestamp || Date.now())) / 1000);
     const remaining = Math.max(0, 120 - elapsed);
@@ -2649,10 +2565,17 @@ function renderPermissionCard(p) {
 }
 
 function renderQuestionCard(p) {
+  const ti = p.tool_input || {};
+  const prompt = ti.prompt || ti.question || p.prompt || (ti.questions && ti.questions[0] && ti.questions[0].question) || '';
+  const options = p.options || ti.options || (ti.questions && ti.questions[0] && ti.questions[0].options) || [];
   return `
     <div class="perm-card question-card" id="perm-${p.requestId}" role="region" aria-label="Question from Claude Code">
       <div class="tool-name">Question ${sessionTag(p.session_id)}</div>
-      <div class="tool-input" style="margin:4px 0 8px;font-size:13px;">${esc(p.prompt || '')}</div>
+      <div class="tool-input" style="margin:4px 0 8px;font-size:13px;">${esc(prompt)}</div>
+      ${options.length > 0 ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;" role="group" aria-label="Response options">${options.map((o, i) => `
+        <button class="btn opt-btn" data-rid="${esc(p.requestId)}" data-val="${esc(o.label || o)}" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:6px;font-size:13px;" aria-label="Select option: ${esc(o.label || o)}" title="${esc(o.description || '')}">
+          ${esc(o.label || o)}
+        </button>`).join('')}</div>` : ''}
       <div style="display:flex;gap:8px;">
         <input type="text" id="question-input-${esc(p.requestId)}" aria-label="Response to Claude Code question" placeholder="Type your response..." style="flex:1;padding:8px 10px;background:var(--bg);border:1px solid var(--accent);color:var(--text);border-radius:6px;font-size:16px;font-family:inherit;outline:none;"
           onkeydown="if(event.key==='Enter'){event.preventDefault();respondToQuestion('${esc(p.requestId)}')}">
@@ -3738,9 +3661,22 @@ fetch('/api/sites?token=' + TOKEN).then(r => r.json()).then(sites => {
         ctx.globalAlpha = 1;
         break;
       case 'dim':
-        var dim = 0.1 + 0.08 * Math.sin(e / 2000);
-        _bracket(ctx, s, TOOL.color, dim);
-        _drawName(ctx, s, 1, 0.2);
+        // slow shimmer along bracket only — signals reconnecting
+        _bracket(ctx, s, TOOL.color, 0.15);
+        _drawName(ctx, s, 1, 0.3);
+        var dpts = _getOpenPts(s), dspeed = 2800;
+        var dpos = (e % dspeed) / dspeed;
+        var didx = Math.floor(dpos * (dpts.length - 1));
+        var dpt = dpts[didx];
+        var dgrad = ctx.createRadialGradient(dpt.x, dpt.y, 0, dpt.x, dpt.y, s * 0.08);
+        dgrad.addColorStop(0, TOOL.color + '88'); dgrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = dgrad; ctx.fillRect(0, 0, _c.width, s);
+        var dtrailFrac = 0.15;
+        var di0 = Math.max(0, Math.floor((dpos - dtrailFrac) * (dpts.length - 1)));
+        ctx.strokeStyle = TOOL.color; ctx.lineWidth = s * LW; ctx.lineCap = 'round';
+        ctx.globalAlpha = 0.6; ctx.beginPath(); ctx.moveTo(dpts[di0].x, dpts[di0].y);
+        for(var di = di0 + 1; di <= didx; di++) ctx.lineTo(dpts[di].x, dpts[di].y);
+        ctx.stroke(); ctx.globalAlpha = 1;
         break;
     }
     _raf = requestAnimationFrame(_frame);

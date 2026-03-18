@@ -1,6 +1,6 @@
 {
   "name": "@grainulation/farmer",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Desktop-first permission dashboard for AI coding agents",
   "license": "MIT",
   "author": "grainulation contributors",
@@ -46,9 +46,7 @@
     "status": "node bin/farmer.js status",
     "test": "node --test test/adapters.test.js test/persistence.test.js test/security.test.js"
   },
-  "dependencies": {
-    "ws": "^8.0.0"
-  },
+  "dependencies": {},
   "engines": {
     "node": ">=18"
   }

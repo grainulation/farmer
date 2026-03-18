@@ -11,7 +11,7 @@ npm install
 node bin/farmer.js --help
 ```
 
-Farmer has one dependency: `ws` (WebSocket library). This is the only npm dependency in the entire grainulation ecosystem.
+Farmer has zero npm dependencies. Everything is Node built-ins.
 
 ## How to contribute
 
@@ -36,8 +36,7 @@ Open an issue describing the use case, not just the solution. "I need X because 
 ### Important invariants
 Farmer has critical invariants that must not regress:
 - Server split architecture (desktop + mobile)
-- WebSocket for real-time communication
-- SSE for event streams
+- SSE for real-time streaming, polling as fallback
 - Auth and token persistence across restarts
 - Audit logging for all session activity
 
@@ -46,7 +45,7 @@ Farmer has critical invariants that must not regress:
 ```
 bin/farmer.js             CLI entrypoint -- starts the server
 lib/index.js              Core library -- session and permission management
-lib/server.js             HTTP + WebSocket server (uses ws)
+lib/server.js             HTTP + SSE server (zero deps)
 lib/security.js           Auth, token generation, and validation
 lib/persistence.js        Token and session state persistence
 lib/adapters/             Tool adapters for ecosystem integration
@@ -56,11 +55,11 @@ site/                     Public website (farmer.grainulation.com)
 test/                     Node built-in test runner tests
 ```
 
-The key architectural principle: **farmer is the reference implementation for the grainulation server pattern.** It uses WebSocket (via ws) for real-time communication. All other tools use SSE + POST to stay zero-dep.
+The key architectural principle: **farmer is the reference implementation for the grainulation server pattern.** It uses SSE for real-time streaming with polling as fallback. Zero npm dependencies -- everything is Node built-ins.
 
 ## Code style
 
-- One dependency: `ws`. Nothing else. Use Node built-ins for everything.
+- Zero dependencies. Use Node built-ins for everything.
 - No transpilation. Ship what you write.
 - ESM imports (`import`/`export`). Node 18+ required.
 - Keep functions small. If a function needs a scroll, split it.

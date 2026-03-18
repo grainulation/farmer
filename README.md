@@ -78,7 +78,7 @@ class MyAgentAdapter extends BaseAdapter {
 
 ```
 bin/farmer.js          CLI entry point (start/stop/status)
-lib/server.js          Core HTTP + WebSocket server
+lib/server.js          Core HTTP + SSE server
 lib/adapters/          Agent adapter interface + Claude Code adapter
 lib/persistence.js     State persistence (atomic write, debounced)
 lib/security.js        Token auth, CSRF, CSP, PID lock, audit log
@@ -87,7 +87,7 @@ public/index.html      Dashboard (inline JS, no build step)
 
 ## Zero dependencies
 
-One exception: `ws` for WebSocket support. Everything else is Node built-ins.
+Farmer has zero npm dependencies. SSE for real-time streaming, polling as fallback. Everything is Node built-ins.
 
 ## Part of the grainulation ecosystem
 

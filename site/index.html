@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="index, follow">
 <title>Farmer — Remote permission management for AI coding agents</title>
-<meta name="description" content="Approve, deny, and supervise AI agent tool calls from your phone. Real-time WebSocket dashboard, trust levels, agent-agnostic adapter pattern. Mobile-first.">
+<meta name="description" content="Approve, deny, and supervise AI agent tool calls from your phone. Real-time SSE dashboard, trust levels, agent-agnostic adapter pattern. Zero dependencies. Mobile-first.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Grainulation">
 <meta property="og:locale" content="en_US">
 <meta property="og:title" content="Farmer — Remote permission management for AI coding agents">
-<meta property="og:description" content="Approve, deny, and supervise AI agent tool calls from your phone. Real-time WebSocket dashboard, trust levels, agent-agnostic adapter pattern.">
+<meta property="og:description" content="Approve, deny, and supervise AI agent tool calls from your phone. Real-time SSE dashboard, trust levels, agent-agnostic adapter pattern. Zero dependencies.">
 <meta property="og:url" content="https://farmer.grainulation.com/">
 <meta property="og:image" content="https://farmer.grainulation.com/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -18,7 +18,7 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Farmer — Remote permission management for AI coding agents">
-<meta name="twitter:description" content="Approve, deny, and supervise AI agent tool calls from your phone. Real-time WebSocket/SSE. Mobile-first.">
+<meta name="twitter:description" content="Approve, deny, and supervise AI agent tool calls from your phone. Real-time SSE. Zero dependencies. Mobile-first.">
 <meta name="twitter:image" content="https://farmer.grainulation.com/og-image.png">
 <link rel="canonical" href="https://farmer.grainulation.com/">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><text x='32' y='33' text-anchor='middle' dominant-baseline='central' fill='%233b82f6' font-family='-apple-system,system-ui,sans-serif' font-size='48' font-weight='700'>F</text></svg>">
@@ -316,7 +316,7 @@ footer p{margin-bottom:6px}
     <div class="what-box rv">
       <h2>What is <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong>?</h2>
       <p>When you run an AI coding agent like Claude Code, it sometimes needs your permission before executing commands or editing files. Normally you have to be sitting at your terminal. <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong> removes that constraint.</p>
-      <p>It runs a local server that intercepts tool calls via hooks, streams permission requests to a web dashboard over WebSocket, and waits for your decision. You can approve from your phone, a different tab, or through a Cloudflare tunnel from anywhere in the world. Multi-session, trust-tiered, fully audited.</p>
+      <p>It runs a local server that intercepts tool calls via hooks, streams permission requests to a web dashboard over SSE, and waits for your decision. You can approve from your phone, a different tab, or through a Cloudflare tunnel from anywhere in the world. Multi-session, trust-tiered, fully audited.</p>
       <p>The adapter pattern means <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong> is not locked to Claude Code. Any agent that can POST a JSON permission request to an HTTP endpoint can use it.</p>
     </div>
   </div>
@@ -374,7 +374,7 @@ Open this URL on your phone or another tab.</div>
 <span class="dim"># Cards appear the instant your agent</span>
 <span class="dim"># requests a tool call. No polling delay.</span></code></pre>
         </div>
-        <div class="qs-output">WebSocket connected. Streaming live.
+        <div class="qs-output">SSE connected. Streaming live.
 Trust level: standard
 Sessions: 1 active</div>
       </div>
@@ -501,7 +501,7 @@ Sessions: 1 active</div>
         <!-- Step 2: Server pushes card to dashboard -->
         <line x1="360" y1="135" x2="570" y2="135" stroke="#34d399" stroke-width="1.5"/>
         <polygon points="570,131 578,135 570,139" fill="#34d399"/>
-        <text x="465" y="128" text-anchor="middle" fill="#34d399" font-family="ui-monospace,monospace" font-size="10" font-weight="600">WebSocket push</text>
+        <text x="465" y="128" text-anchor="middle" fill="#34d399" font-family="ui-monospace,monospace" font-size="10" font-weight="600">SSE push</text>
         <text x="465" y="150" text-anchor="middle" fill="#6b7280" font-family="ui-monospace,monospace" font-size="9">{card: pending}</text>
 
         <!-- Step 3: User approves -->
@@ -522,12 +522,12 @@ Sessions: 1 active</div>
         <line x1="360" y1="285" x2="570" y2="285" stroke="#34d399" stroke-width="1.5"/>
         <polygon points="570,281 578,285 570,289" fill="#34d399"/>
         <text x="235" y="278" text-anchor="middle" fill="#a78bfa" font-family="ui-monospace,monospace" font-size="10" font-weight="600">POST /hooks/result</text>
-        <text x="465" y="278" text-anchor="middle" fill="#34d399" font-family="ui-monospace,monospace" font-size="10" font-weight="600">WebSocket push</text>
+        <text x="465" y="278" text-anchor="middle" fill="#34d399" font-family="ui-monospace,monospace" font-size="10" font-weight="600">SSE push</text>
         <text x="350" y="300" text-anchor="middle" fill="#6b7280" font-family="ui-monospace,monospace" font-size="9">{tool, output} -> {card: completed}</text>
 
         <!-- SSE fallback divider -->
         <line x1="40" y1="335" x2="660" y2="335" stroke="#1e293b" stroke-width="1" stroke-dasharray="6,4"/>
-        <text x="350" y="352" text-anchor="middle" fill="#6b7280" font-family="-apple-system,system-ui,sans-serif" font-size="10">SSE fallback for clients without WebSocket</text>
+        <text x="350" y="352" text-anchor="middle" fill="#6b7280" font-family="-apple-system,system-ui,sans-serif" font-size="10">Polling fallback when SSE unavailable</text>
 
         <!-- Step 6: SSE stream -->
         <line x1="360" y1="380" x2="570" y2="380" stroke="#f87171" stroke-width="1.5"/>
@@ -538,7 +538,7 @@ Sessions: 1 active</div>
     </div>
 
     <div style="margin-top:24px;text-align:center" class="rv rv-d4">
-      <p style="color:var(--text-2);font-size:.875rem;max-width:560px;margin:0 auto">WebSocket is the primary transport for the dashboard. SSE provides a zero-dependency fallback. The hook endpoints use plain HTTP POST -- any agent that can <code>curl</code> can integrate.</p>
+      <p style="color:var(--text-2);font-size:.875rem;max-width:560px;margin:0 auto">SSE is the primary transport for the dashboard with polling as fallback. Zero npm dependencies. The hook endpoints use plain HTTP POST -- any agent that can <code>curl</code> can integrate.</p>
     </div>
   </div>
 </section>
@@ -591,8 +591,8 @@ Sessions: 1 active</div>
         <div class="feature-icon" style="background:var(--blue-dim);color:var(--blue)">
           <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
         </div>
-        <h3>WebSocket + SSE</h3>
-        <p>WebSocket for real-time bidirectional communication. SSE as a zero-dependency fallback. Permission cards stream the instant they are requested.</p>
+        <h3>SSE + Polling</h3>
+        <p>Server-Sent Events for real-time streaming. Polling as automatic fallback. Zero npm dependencies. Permission cards stream the instant they are requested.</p>
       </div>
       <div class="feature-card rv rv-d3">
         <div class="feature-icon" style="background:var(--purple-dim);color:var(--purple)">
