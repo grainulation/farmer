@@ -4,7 +4,7 @@
 
 Initial release.
 
-- Desktop-first permission dashboard with mobile-responsive UI
+- Mobile-first permission dashboard for AI coding agents
 - SSE real-time updates for live session monitoring
 - Trust levels: paranoid, standard, autonomous
 - Hook protocol: permission, activity, notification, lifecycle
