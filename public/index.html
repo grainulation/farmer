@@ -108,33 +108,52 @@
   /* p065: connection-lost banner */
   .connection-banner {
     display: none;
-    padding: 10px 16px;
+    padding: 16px;
     font-size: 13px;
     font-weight: 600;
     text-align: center;
     animation: hb-slide-in 0.3s ease-out;
   }
-  .connection-banner.disconnected {
-    display: block;
-    background: rgba(245,158,11,0.18);
-    color: var(--orange);
-    border-bottom: 1px solid rgba(245,158,11,0.3);
+  .connection-banner.disconnected,
+  .connection-banner.failed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    background: rgba(10,14,26,0.95);
+    color: var(--text-2);
+    border-bottom: 1px solid rgba(59,130,246,0.2);
   }
   .connection-banner.failed {
-    display: block;
-    background: rgba(239,68,68,0.18);
-    color: var(--red);
-    border-bottom: 1px solid rgba(239,68,68,0.3);
+    border-bottom-color: rgba(239,68,68,0.3);
   }
+  .connection-banner .conn-logo {
+    width: 48px;
+    height: 48px;
+    animation: conn-pulse 2s ease-in-out infinite;
+  }
+  .connection-banner.failed .conn-logo {
+    animation: conn-pulse 3s ease-in-out infinite;
+    opacity: 0.5;
+  }
+  @keyframes conn-pulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.05); }
+  }
+  .connection-banner .conn-text {
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .connection-banner.disconnected .conn-text { color: var(--orange); }
+  .connection-banner.failed .conn-text { color: var(--red); }
   .connection-banner .conn-sub {
     font-weight: 400;
     font-size: 11px;
-    opacity: 0.8;
-    margin-top: 2px;
+    opacity: 0.6;
   }
   .connection-banner .reconnect-btn {
     display: inline-block;
-    margin-top: 6px;
+    margin-top: 4px;
     padding: 4px 16px;
     font-size: 12px;
     font-weight: 600;
@@ -1481,22 +1500,25 @@ async function refreshFullState() {
 }
 
 // p065: connection banner management
+const _connLogoSvg = '<svg class="conn-logo" viewBox="0 0 54 38" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22,8 L16,8 C10.5,12.5 10.5,25.5 16,30 L22,30" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="22" y="19" text-anchor="middle" dominant-baseline="central" fill="#3b82f6" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">F</text><text x="28" y="19" dominant-baseline="central" fill="#e8ecf1" font-family="-apple-system,system-ui,sans-serif" font-size="18.2" font-weight="800">armer</text></svg>';
 function updateConnectionBanner(state, attempt, max) {
   const banner = document.getElementById('connectionBanner');
   if (!banner) return;
   if (!state) {
     banner.className = 'connection-banner';
     banner.innerHTML = '';
+    if (window._grainSetState) window._grainSetState('idle');
     // On reconnect, fetch full state to catch up on missed events
     refreshFullState();
     return;
   }
+  if (window._grainSetState) window._grainSetState('dim');
   if (state === 'disconnected') {
     banner.className = 'connection-banner disconnected';
-    banner.innerHTML = t('Connection lost — reconnecting ({attempt}/{max})...', { attempt, max }) + '<div class="conn-sub">' + t('Polling is active as fallback') + '</div>';
+    banner.innerHTML = _connLogoSvg + '<div class="conn-text">' + t('Reconnecting ({attempt}/{max})...', { attempt, max }) + '</div><div class="conn-sub">' + t('Polling active as fallback') + '</div>';
   } else if (state === 'failed') {
     banner.className = 'connection-banner failed';
-    banner.innerHTML = t('Connection lost — realtime updates unavailable') + '<div class="conn-sub">' + t('Polling is active as fallback') + '</div><button class="reconnect-btn" onclick="manualReconnect()">' + t('Reconnect') + '</button>';
+    banner.innerHTML = _connLogoSvg + '<div class="conn-text">' + t('Connection lost') + '</div><div class="conn-sub">' + t('Polling active as fallback') + '</div><button class="reconnect-btn" onclick="manualReconnect()">' + t('Reconnect') + '</button>';
   }
 }
 
@@ -1573,6 +1595,10 @@ function updateLiveStatus(text) {
 
 function handleMessage(msg) {
   switch (msg.type) {
+    case 'state':
+      state = { ...state, ...msg.data };
+      renderSessionBar();
+      break;
     case 'init':
       if (msg.data.csrfToken) csrfToken = msg.data.csrfToken;
       state = { ...state, ...msg.data };
