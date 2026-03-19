@@ -106,18 +106,21 @@ Reports session start/end events.
 
 ## Dashboard API
 
-These endpoints require token authentication (cookie or URL param) and CSRF token for mutations.
+These endpoints require token authentication (cookie or URL param) and CSRF token for mutations. Role-based access applies: viewer tokens receive 403 on mutating endpoints (decide, trust-level, rules, message, rotate-token, invite generation).
 
 | Method | Path | Description |
 |---|---|---|
+| GET | `/invite` | Validate HMAC signed invite link (`?role=...&exp=...&sig=...`), set auth cookie, redirect to dashboard |
 | GET | `/events` | SSE stream (real-time push) |
 | GET | `/api/state` | Full current state |
 | POST | `/api/decide` | Approve/deny a pending permission |
 | POST | `/api/trust-level` | Set trust level |
 | POST | `/api/rules` | Add/remove auto-approve rules |
 | POST | `/api/message` | Relay a message (localhost only) |
-| POST | `/api/admin/rotate-token` | Rotate auth token |
+| GET | `/api/admin/invite` | Generate a signed invite URL (admin-only) |
+| POST | `/api/admin/rotate-token` | Rotate auth token (admin-only) |
+| POST | `/connect` | Connect external tools (admin-only, returns 404 for non-admin) |
 
 ## SSE
 
-Connect to `/events?token=your-token-here` to receive real-time push updates. On connect, you receive an `init` message with full state. Subsequent messages are pushed as SSE `data:` frames. Polling via `/api/state` serves as automatic fallback.
+Connect to `/events?token=your-token-here` to receive real-time push updates. On connect, you receive an `init` message with full state. Subsequent messages are pushed as SSE `data:` frames. The client implements improved reconnection with exponential backoff and automatic state resync on reconnect. Polling via `/api/state` serves as automatic fallback.

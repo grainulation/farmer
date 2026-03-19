@@ -29,22 +29,25 @@ farmer start  # prints hook configuration instructions
 
 ## Features
 
-- **Desktop + mobile dashboard** -- session sidebar, permission cards, activity feed
+- **Desktop + mobile dashboard** -- session sidebar, permission cards with syntax-highlighted code, activity feed, mobile swipe card view
 - **Agent-agnostic hook protocol** -- Claude Code adapter ships first; write your own for other agents
 - **Multi-session** -- manage multiple AI sessions from one dashboard
-- **Trust tiers** -- paranoid (approve everything), standard (auto-approve reads), autonomous (auto-approve most)
+- **Multi-user roles** -- admin and viewer tokens with separate permissions; viewers see read-only cards with "Waiting for admin" labels, admin controls hidden
+- **Trust tiers** -- paranoid (approve everything, overrides session-level rules), standard (auto-approve reads), autonomous (auto-approve most)
 - **AskUserQuestion** -- deny-to-respond pattern lets you answer agent questions from the dashboard
-- **Security** -- token auth, CSRF protection, CSP headers, audit logging
+- **Security** -- two-token auth (admin + viewer), HMAC-signed invite links with expiry, CSRF protection, CSP headers, audit logging
 - **Data persistence** -- activity and messages survive server restarts
 - **Stale server guard** -- auto-approves when no dashboard is connected (prevents CLI blocking)
 
 ## CLI
 
 ```bash
-farmer start [--port 9090] [--token <secret>] [--trust-proxy] [--data-dir <path>]
+farmer start [--port 9090] [--token <secret>] [--viewer-token <secret>] [--trust-proxy] [--data-dir <path>]
 farmer stop
 farmer status
 ```
+
+Tokens are persisted in a JSON token file (`tokens.json` in the data directory). The file stores admin and viewer tokens and is backwards compatible with the legacy plain-text format.
 
 ## Hook protocol
 

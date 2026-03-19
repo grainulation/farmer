@@ -37,7 +37,7 @@ Open an issue describing the use case, not just the solution. "I need X because 
 Farmer has critical invariants that must not regress:
 - Server split architecture (desktop + mobile)
 - SSE for real-time streaming, polling as fallback
-- Auth and token persistence across restarts
+- Two-token auth (admin + viewer) and JSON token persistence across restarts
 - Audit logging for all session activity
 
 ## Architecture
@@ -46,7 +46,7 @@ Farmer has critical invariants that must not regress:
 bin/farmer.js             CLI entrypoint -- starts the server
 lib/index.js              Core library -- session and permission management
 lib/server.js             HTTP + SSE server (zero deps)
-lib/security.js           Auth, token generation, and validation
+lib/security.js           Two-token auth (admin + viewer), HMAC invite links, token generation, and validation
 lib/persistence.js        Token and session state persistence
 lib/adapters/             Tool adapters for ecosystem integration
 lib/qrcodegen-nayuki.js   QR code generation (vendored, zero deps)

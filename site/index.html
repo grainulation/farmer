@@ -337,9 +337,10 @@ footer p{margin-bottom:6px}
           <button class="copy-btn" onclick="copyText(this,'npx @grainulation/farmer start')">Copy</button>
         </div>
         <div class="qs-output"><span style="color:var(--green)">Farmer running on port 9090</span>
-Dashboard: http://localhost:9090?token=a1b2c3
-Token persisted to .farmer-token
-Open this URL on your phone or another tab.</div>
+Admin:  http://localhost:9090?token=a1b2c3
+Viewer: http://localhost:9090?token=d4e5f6
+Tokens persisted to .farmer-token
+Open the admin URL for full control, or share the viewer URL for read-only monitoring.</div>
       </div>
       <div class="qs-step rv rv-d2">
         <div class="qs-num">2</div>
@@ -555,7 +556,7 @@ Sessions: 1 active</div>
       <div class="trust-card">
         <div class="trust-level" style="background:var(--red-dim);color:var(--red)">Paranoid</div>
         <h3>Every call reviewed</h3>
-        <p>Nothing executes without explicit approval. Read, Write, Bash — everything requires a tap. Best for sensitive repos or unfamiliar agents.</p>
+        <p>Nothing executes without explicit approval. Read, Write, Bash — everything requires a tap. Paranoid mode overrides per-session trust rules, ensuring no auto-approvals slip through. Best for sensitive repos or unfamiliar agents.</p>
       </div>
       <div class="trust-card" style="border-color:rgba(59,130,246,.2)">
         <div class="trust-level" style="background:var(--accent-dim);color:var(--accent)">Standard</div>
@@ -585,7 +586,7 @@ Sessions: 1 active</div>
           <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
         </div>
         <h3>Token Authentication</h3>
-        <p>Every session gets a unique token, persisted to disk so server restarts don't disrupt your workflow. No token, no access.</p>
+        <p>Two-token model: an admin token for full control and a viewer token for read-only monitoring. Both are persisted to disk so server restarts don't disrupt your workflow. HMAC-signed invite links let you share access securely. Backwards compatible with old plain-text token files.</p>
       </div>
       <div class="feature-card rv rv-d2">
         <div class="feature-icon" style="background:var(--blue-dim);color:var(--blue)">
@@ -643,6 +644,20 @@ Sessions: 1 active</div>
         <h3>Feedback Queue</h3>
         <p>Send feedback to your agent without switching to the terminal. The poll/ack pattern ensures messages are delivered even if the agent is mid-task.</p>
       </div>
+      <div class="feature-card rv">
+        <div class="feature-icon" style="background:var(--purple-dim);color:var(--purple)">
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <h3>Multi-User Roles</h3>
+        <p>Admin role for full control — approve, deny, change settings. Viewer role for read-only dashboard monitoring without the ability to act. Invite links with configurable expiry for sharing access. The /connect page shows dual QR codes for easy phone pairing.</p>
+      </div>
+      <div class="feature-card rv">
+        <div class="feature-icon" style="background:var(--green-dim);color:var(--green)">
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 22h6"/><path d="M7 10h10M7 14h6"/></svg>
+        </div>
+        <h3>Mobile UX</h3>
+        <p>Swipe card view for fast permission decisions on mobile. Syntax-highlighted code in permission cards so you can read diffs at a glance. Session count in the footer instead of individual pills to keep the interface clean on small screens.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -668,7 +683,7 @@ Sessions: 1 active</div>
           <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
         <div class="faq-a">
-          <p>Three options: (1) If your phone is on the same network, bind to 0.0.0.0 and use your machine's local IP. (2) Use a Cloudflare tunnel — <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong> has built-in support. (3) Use ngrok, tailscale, or any tunnel of your choice. The token in the URL handles authentication.</p>
+          <p>Three options: (1) If your phone is on the same network, bind to 0.0.0.0 and use your machine's local IP. (2) Use a Cloudflare tunnel — <strong style="color:#fff;font-size:110%"><span style="color:var(--accent)">f</span>armer</strong> has built-in support. (3) Use ngrok, tailscale, or any tunnel of your choice. Once connected, the /connect page shows dual QR codes — scan the admin QR for full control, or the viewer QR for monitoring-only access. You can also generate invite links as an alternative to QR codes.</p>
         </div>
       </div>
       <div class="faq-item rv rv-d3">

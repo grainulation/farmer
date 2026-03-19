@@ -80,6 +80,38 @@
   .trust-badge.standard { background: rgba(245,158,11,0.15); color: var(--orange); }
   .trust-badge.autonomous { background: rgba(34,197,94,0.15); color: var(--green); }
 
+  /* Viewer role badge */
+  .role-badge {
+    display: none;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 4px 14px;
+    border-radius: 14px;
+    height: 22px;
+    line-height: 14px;
+    margin-inline-start: 8px;
+    color: #60a5fa;
+    border: 1px solid rgba(96,165,250,0.3);
+    background: rgba(96,165,250,0.1);
+  }
+  body.viewer .role-badge { display: inline-block; }
+
+  /* Viewer mode: tinted header + top accent bar */
+  body.viewer .header {
+    border-top: 3px solid #60a5fa;
+    background: linear-gradient(180deg, rgba(96,165,250,0.08) 0%, transparent 100%);
+  }
+
+  /* Viewer mode: hide admin-only elements */
+  body.viewer .perm-actions,
+  body.viewer .quick-rules,
+  body.viewer .keyboard-hints,
+  body.viewer .inline-feedback,
+  body.viewer .trust-badge,
+  body.viewer #tab-rules { display: none !important; }
+
   /* f004: CLI blocking visibility banner */
   .heartbeat-banner {
     display: none;
@@ -205,7 +237,8 @@
   .content, .tabs, .session-bar { scrollbar-width: none; -ms-overflow-style: none; }
   .content::-webkit-scrollbar, .tabs::-webkit-scrollbar, .session-bar::-webkit-scrollbar { display: none; }
 
-  .content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 24px 24px 44px; max-width: 100%; word-break: break-word; }
+  .content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 24px 24px 44px; max-width: 100%; word-break: break-word; position: relative; }
+  .content:has(.swipe-stack) { overflow: hidden; padding: 0; }
 
   /* Permissions View */
   .perm-card {
@@ -229,6 +262,192 @@
   .perm-card.risk-write .tool-name { color: var(--orange); }
   .perm-card.risk-danger { border-inline-start-color: var(--red); background: rgba(239,68,68,0.05); }
   .perm-card.risk-danger .tool-name { color: var(--red); }
+
+  /* ── SWIPE CARD VIEW (mobile permissions) ──────────── */
+  .swipe-stack {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin-bottom: 48px; /* clear footer bar */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    contain: layout style paint;
+  }
+  .swipe-counter {
+    text-align: center;
+    font-size: 11px;
+    color: var(--dim);
+    padding: 6px 0 0;
+    flex-shrink: 0;
+    letter-spacing: 0.05em;
+  }
+  .swipe-card-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    touch-action: none;
+    overscroll-behavior: none;
+  }
+  .swipe-card {
+    position: absolute;
+    inset: 0;
+    padding: 12px 16px;
+    transition: transform 0.08s ease-out, opacity 0.08s ease-out;
+    will-change: transform, opacity;
+  }
+  .swipe-hint {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    opacity: 0;
+    transition: opacity 0.1s;
+    pointer-events: none;
+    z-index: 2;
+    padding: 8px 16px;
+    border-radius: 8px;
+  }
+  .swipe-hint-allow { right: 16px; color: var(--green); border: 2px solid var(--green); background: rgba(34,197,94,0.1); }
+  .swipe-hint-deny { left: 16px; color: var(--red); border: 2px solid var(--red); background: rgba(239,68,68,0.1); }
+
+  /* Fixed card frame */
+  .fc {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--glass);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .fc.risk-safe { border-color: rgba(34,197,94,0.25); }
+  .fc.risk-write { border-color: rgba(245,158,11,0.25); }
+  .fc.risk-danger { border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.03); }
+
+  .fc-header {
+    padding: 16px 16px 12px;
+    border-bottom: 1px solid var(--glass-border);
+    flex-shrink: 0;
+  }
+  .fc-type {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--dim);
+    margin-bottom: 6px;
+  }
+  .fc-type svg { width: 14px; height: 14px; opacity: 0.6; }
+  .fc-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .fc-path {
+    font-family: monospace;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .fc-path .fname { color: var(--text); font-weight: 600; }
+  .fc-path .fdir { opacity: 0.5; }
+  .fc-risk {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+  }
+  .fc-risk.safe { color: var(--green); background: rgba(34,197,94,0.12); }
+  .fc-risk.write { color: var(--orange); background: rgba(245,158,11,0.12); }
+  .fc-risk.danger { color: var(--red); background: rgba(239,68,68,0.15); }
+
+  .fc-body {
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    padding: 16px;
+  }
+  .fc-code {
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    background: rgba(0,0,0,0.3);
+    border-radius: 8px;
+    padding: 12px;
+    overflow: hidden;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--text);
+    max-height: 200px;
+    -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+  }
+  /* Bash syntax classes */
+  .sh-cmd { color: #e2e8f0; font-weight: 600; }
+  .sh-flag { color: #67e8f9; }
+  .sh-str { color: #86efac; }
+  .sh-pipe { color: #fbbf24; font-weight: 600; }
+  .sh-path { color: #93c5fd; }
+  .sh-danger { color: #fca5a5; background: rgba(239,68,68,0.15); border-radius: 3px; padding: 0 3px; }
+
+  /* Diff classes */
+  .fc-diff { font-family: 'SF Mono', 'Menlo', 'Consolas', monospace; font-size: 12px; line-height: 1.6; border-radius: 8px; overflow: hidden; }
+  .diff-line { padding: 2px 10px; white-space: pre; overflow-x: auto; }
+  .diff-del { background: rgba(239,68,68,0.12); color: #fca5a5; }
+  .diff-add { background: rgba(34,197,94,0.12); color: #86efac; }
+  .diff-ctx { color: var(--dim); }
+  .diff-more { padding: 6px 10px; color: var(--dim); font-size: 11px; background: rgba(0,0,0,0.2); }
+
+  .fc-session {
+    font-size: 11px;
+    color: var(--dim);
+    margin-top: 4px;
+  }
+
+  .fc-footer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--glass-border);
+    flex-shrink: 0;
+  }
+  .fc-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .fc-actions .btn { flex: 1; padding: 12px; font-size: 14px; font-weight: 600; border-radius: 10px; border: none; cursor: pointer; }
+  .fc-btn-allow { background: rgba(34,197,94,0.15); color: var(--green); }
+  .fc-btn-allow:active { background: rgba(34,197,94,0.3); }
+  .fc-btn-deny { background: rgba(239,68,68,0.12); color: var(--red); }
+  .fc-btn-deny:active { background: rgba(239,68,68,0.25); }
+  .fc-timer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--dim);
+    margin-top: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+  .fc-viewer-msg {
+    text-align: center;
+    font-size: 13px;
+    color: var(--dim);
+    font-style: italic;
+    padding: 12px;
+  }
   .risk-badge {
     font-size: 10px;
     font-weight: 700;
@@ -1356,22 +1575,20 @@
   }
   .footer-sessions::-webkit-scrollbar { display: none; }
   .inline-feedback {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex: 1;
-    justify-content: flex-end;
+    flex-shrink: 0;
   }
   .fb-trigger {
-    background: none;
+    background: rgba(0,0,0,0.2);
     border: 1px solid var(--glass-border);
     color: var(--muted);
     font-size: 12px;
     font-weight: 500;
-    padding: 4px 10px;
-    border-radius: 14px;
+    padding: 6px 12px;
+    border-radius: 20px;
     cursor: pointer;
     font-family: inherit;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   .fb-trigger:hover { color: var(--text); border-color: var(--dim); }
   .fb-row {
@@ -1379,8 +1596,12 @@
     align-items: center;
     gap: 6px;
     flex: 1;
+    min-width: 0;
   }
   .fb-row.open { display: flex; }
+  .fb-row.open ~ .footer-sessions,
+  .footer-bar:has(.fb-row.open) .footer-sessions,
+  .footer-bar:has(.fb-row.open) .fb-trigger { display: none; }
   .fb-row input {
     flex: 1;
     padding: 6px 10px;
@@ -1476,6 +1697,7 @@
     <div style="flex:1"></div>
     <div class="status" aria-label="Connection status">
       <span class="trust-badge paranoid" id="trustBadge" aria-label="Trust level: paranoid">paranoid</span>
+      <span class="role-badge" id="roleBadge" aria-label="Role: viewer">VIEWER</span>
       <div class="dot" id="statusDot" role="status" aria-hidden="true"></div>
     </div>
     <span id="statusText" style="display:none" role="status" aria-live="polite">Connecting...</span>
@@ -1529,14 +1751,12 @@
   <!-- Footer: sessions + inline feedback -->
   <div class="footer-bar" id="footerBar">
     <div class="footer-sessions" id="footerSessions"></div>
-    <div class="inline-feedback">
-      <button class="fb-trigger" id="fbTrigger" onclick="openInlineFeedback()">Feedback</button>
-      <div class="fb-row" id="fbRow">
-        <input id="fbInput" placeholder="Note to Claude..." onkeydown="if(event.key==='Enter'){sendFooterFeedback();event.preventDefault();}" onblur="setTimeout(closeInlineFeedback,200)">
-        <button class="fb-send" onclick="sendFooterFeedback()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></button>
-      </div>
-      <span class="fb-sent" id="fbSent">Sent</span>
+    <button class="fb-trigger inline-feedback" id="fbTrigger" onclick="openInlineFeedback()">Feedback</button>
+    <div class="fb-row inline-feedback" id="fbRow">
+      <input id="fbInput" placeholder="Note to Claude..." onkeydown="if(event.key==='Enter'){sendFooterFeedback();event.preventDefault();}" onblur="setTimeout(closeInlineFeedback,200)">
+      <button class="fb-send" onclick="sendFooterFeedback()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></button>
     </div>
+    <span class="fb-sent inline-feedback" id="fbSent">Sent</span>
   </div>
 
 </div>
@@ -1666,10 +1886,12 @@ function trySSE() {
     evtSource.onmessage = (e) => {
       const msg = JSON.parse(e.data);
       handleMessage(msg);
-      if (liveTransport !== 'sse') {
+      // Always clear reconnection state on any successful SSE message
+      if (liveTransport !== 'sse' || sseRetryCount > 0) {
         liveTransport = 'sse';
-        sseRetryCount = 0; // reset backoff on successful connection
-        updateConnectionBanner(null); // clear any disconnection banner
+        sseRetryCount = 0;
+        if (sseRetryTimer) { clearTimeout(sseRetryTimer); sseRetryTimer = null; }
+        updateConnectionBanner(null);
       }
       document.getElementById('statusDot').className = 'dot connected';
       document.getElementById('statusText').textContent = t('Connected');
@@ -1800,6 +2022,13 @@ async function poll() {
     }
     document.getElementById('statusDot').className = 'dot connected';
     document.getElementById('statusText').textContent = t('Connected');
+    // If SSE is dead but polling works, clear banner and retry SSE
+    if (!evtSource && sseRetryCount > 0) {
+      sseRetryCount = 0;
+      if (sseRetryTimer) { clearTimeout(sseRetryTimer); sseRetryTimer = null; }
+      updateConnectionBanner(null);
+      trySSE();
+    }
   } catch (err) {
     document.getElementById('statusDot').className = 'dot';
     document.getElementById('statusText').textContent = t('Error: ') + (err.message || err);
@@ -1811,15 +2040,33 @@ function updateLiveStatus(text) {
   if (ls) ls.textContent = text;
 }
 
+// --- Viewer role detection (r075-r084) ---
+window.isViewer = false;
+function applyRole(role) {
+  // Accept role from SSE init/state payload, or fall back to window.__FARMER_ROLE__
+  const r = role || window.__FARMER_ROLE__ || 'admin';
+  window.isViewer = (r === 'viewer');
+  document.body.classList.toggle('viewer', window.isViewer);
+  // Rename Permissions tab for viewer mode
+  const permTab = document.getElementById('tab-permissions');
+  if (permTab) {
+    const badge = permTab.querySelector('.badge');
+    const badgeHtml = badge ? badge.outerHTML : '';
+    permTab.innerHTML = window.isViewer ? ('Pending ' + badgeHtml) : ('Permissions ' + badgeHtml);
+  }
+}
+
 function handleMessage(msg) {
   switch (msg.type) {
     case 'state':
       state = { ...state, ...msg.data };
+      applyRole(msg.data.role);
       renderSessionBar();
       break;
     case 'init':
       if (msg.data.csrfToken) csrfToken = msg.data.csrfToken;
       state = { ...state, ...msg.data };
+      applyRole(msg.data.role);
       renderSessionBar();
       updateLiveStatus('Connected: ' + (state.pending || []).length + ' pending permissions');
       break;
@@ -1983,6 +2230,7 @@ function updateHeartbeatBanner(hb) {
 const resolvedRequests = new Set(); // f004: track resolved requests so render() skips them
 
 async function decide(requestId, allow) {
+  if (window.isViewer) return; // viewer cannot approve/deny
   resolvedRequests.add(requestId);
   const card = document.getElementById('perm-' + requestId);
   if (card) {
@@ -2001,6 +2249,7 @@ async function decide(requestId, allow) {
   }, 1500);
 }
 async function respondToQuestion(requestId, directVal) {
+  if (window.isViewer) return; // viewer cannot respond to questions
   const input = document.getElementById('question-input-' + requestId);
   const val = directVal || (input && input.value) || t('Approved remotely');
   if (input) input.blur();
@@ -2183,7 +2432,7 @@ function renderDesktopSidebar() {
     { tab: 'requests', label: t('Requests'), badge: reqs.length },
     { tab: 'claims', label: t('Claims'), badge: 0 },
     { tab: 'sprint', label: t('Sprint'), badge: 0 },
-    { tab: 'rules', label: t('Rules'), badge: 0 },
+    ...(!window.isViewer ? [{ tab: 'rules', label: t('Rules'), badge: 0 }] : []),
     { tab: 'agents', label: t('Agents'), badge: runningAgents },
   ];
 
@@ -2330,11 +2579,11 @@ function renderDesktopMain() {
             <button class="btn opt-btn" data-rid="${esc(p.requestId)}" data-val="${esc(o.label)}" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:6px;font-size:13px;" aria-label="Select option: ${esc(o.label)}" title="${esc(o.description || '')}">
               ${esc(o.label)}
             </button>`).join('')}</div>` : ''}
-          <div style="display:flex;gap:8px;">
+          ${window.isViewer ? '<div style="font-size:12px;color:var(--dim);font-style:italic;">Waiting for admin</div>' : `<div style="display:flex;gap:8px;">
             <input type="text" id="question-input-${esc(p.requestId)}" aria-label="Type your response to Claude Code" placeholder="${t('Type your response...')}" style="flex:1;padding:8px 10px;background:var(--bg);border:1px solid var(--accent);color:var(--text);border-radius:6px;font-size:16px;font-family:inherit;outline:none;"
               onkeydown="if(event.key==='Enter'){event.preventDefault();respondToQuestion('${esc(p.requestId)}')}">
             <button class="btn btn-blue" onclick="respondToQuestion('${esc(p.requestId)}')" style="padding:8px 14px;white-space:nowrap;" aria-label="Send response">Send</button>
-          </div>
+          </div>`}
         </div>
       `;
     }).join('');
@@ -2397,6 +2646,19 @@ function render() {
   ab.style.display = running > 0 ? 'inline-block' : 'none';
   ab.textContent = running;
   ab.style.background = 'var(--accent)';
+
+  // Hide empty tabs on mobile
+  if (!isDesktop()) {
+    const hasClaims = state.claims?.claims?.length > 0;
+    const hasSprint = state.claims?.meta?.question;
+    const hasAgents = state.agents?.length > 0;
+    const tc = document.getElementById('tab-claims');
+    const ts = document.getElementById('tab-sprint');
+    const ta = document.getElementById('tab-agents');
+    if (tc) tc.style.display = hasClaims ? '' : 'none';
+    if (ts) ts.style.display = hasSprint ? '' : 'none';
+    if (ta) ta.style.display = hasAgents ? '' : 'none';
+  }
 }
 
 // Re-render on resize to switch between mobile/desktop
@@ -2404,6 +2666,64 @@ let _resizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(_resizeTimer);
   _resizeTimer = setTimeout(render, 150);
+});
+
+// --- Swipe card touch handling ---
+let _swipeStartX = 0, _swipeStartY = 0, _swiping = false, _swipeDx = 0;
+const SWIPE_THRESHOLD = 80;
+
+document.addEventListener('touchstart', (e) => {
+  const card = e.target.closest('#swipeCard');
+  if (!card) return;
+  _swipeStartX = e.touches[0].clientX;
+  _swipeStartY = e.touches[0].clientY;
+  _swiping = true;
+  _swipeDx = 0;
+  card.style.transition = 'none';
+}, { passive: true });
+
+document.addEventListener('touchmove', (e) => {
+  if (!_swiping) return;
+  const card = document.getElementById('swipeCard');
+  if (!card) return;
+  _swipeDx = e.touches[0].clientX - _swipeStartX;
+  const dy = e.touches[0].clientY - _swipeStartY;
+  // If mostly vertical, skip to allow scroll
+  if (Math.abs(dy) > Math.abs(_swipeDx) * 1.5 && Math.abs(_swipeDx) < 20) return;
+  const rot = _swipeDx * 0.05;
+  card.style.transform = `translateX(${_swipeDx}px) rotate(${rot}deg)`;
+  const pct = Math.min(Math.abs(_swipeDx) / SWIPE_THRESHOLD, 1);
+  const hintAllow = document.getElementById('swipeHintAllow');
+  const hintDeny = document.getElementById('swipeHintDeny');
+  if (hintAllow) hintAllow.style.opacity = _swipeDx > 20 ? pct : 0;
+  if (hintDeny) hintDeny.style.opacity = _swipeDx < -20 ? pct : 0;
+}, { passive: true });
+
+document.addEventListener('touchend', () => {
+  if (!_swiping) return;
+  _swiping = false;
+  const card = document.getElementById('swipeCard');
+  if (!card) return;
+  card.style.transition = 'transform 0.25s ease-out, opacity 0.25s ease-out';
+
+  if (Math.abs(_swipeDx) >= SWIPE_THRESHOLD) {
+    const allow = _swipeDx > 0;
+    const flyX = allow ? 400 : -400;
+    card.style.transform = `translateX(${flyX}px) rotate(${flyX * 0.05}deg)`;
+    card.style.opacity = '0';
+    const rid = card.dataset.rid;
+    setTimeout(() => {
+      decide(rid, allow);
+    }, 200);
+  } else {
+    // Snap back
+    card.style.transform = 'translateX(0) rotate(0)';
+    const hintAllow = document.getElementById('swipeHintAllow');
+    const hintDeny = document.getElementById('swipeHintDeny');
+    if (hintAllow) hintAllow.style.opacity = 0;
+    if (hintDeny) hintDeny.style.opacity = 0;
+  }
+  _swipeDx = 0;
 });
 
 function updateBadge() {
@@ -2458,18 +2778,125 @@ async function sendFeedback() {
   } catch {}
 }
 
+// --- Content formatters (zero-dep) ---
+function highlightBash(cmd) {
+  const safe = esc(cmd);
+  const DANGER = /\b(rm|sudo|kill|dd|mkfs|chmod\s+777|--force|--hard|git\s+push|git\s+reset)\b/g;
+  return safe
+    .replace(DANGER, '<span class="sh-danger">$1</span>')
+    .replace(/(&quot;[^&]*?&quot;|&#x27;[^&]*?&#x27;)/g, '<span class="sh-str">$1</span>')
+    .replace(/(\s)(--?\w[\w-]*)/g, '$1<span class="sh-flag">$2</span>')
+    .replace(/(\|{1,2}|&amp;&amp;|;|&gt;{1,2}|&lt;)/g, '<span class="sh-pipe">$1</span>');
+}
+
+function truncPath(p) {
+  if (!p || p.length < 45) return `<span class="fname">${esc(p || '')}</span>`;
+  const parts = p.split('/');
+  const fname = parts.pop();
+  const dir = parts.length > 2
+    ? parts[0] + '/.../' + parts[parts.length - 1]
+    : parts.join('/');
+  return `<span class="fdir">${esc(dir)}/</span><span class="fname">${esc(fname)}</span>`;
+}
+
+function miniDiff(oldStr, newStr) {
+  const oldLines = (oldStr || '').split('\n');
+  const newLines = (newStr || '').split('\n');
+  const lines = [];
+  const max = 10;
+  for (let i = 0; i < Math.min(oldLines.length, max); i++) {
+    if (oldLines[i].trim()) lines.push(`<div class="diff-line diff-del">- ${esc(oldLines[i])}</div>`);
+  }
+  for (let i = 0; i < Math.min(newLines.length, max); i++) {
+    if (newLines[i].trim()) lines.push(`<div class="diff-line diff-add">+ ${esc(newLines[i])}</div>`);
+  }
+  const total = oldLines.length + newLines.length;
+  if (total > max * 2) lines.push(`<div class="diff-more">... ${total - max * 2} more lines</div>`);
+  return `<div class="fc-diff">${lines.join('')}</div>`;
+}
+
+function formatCardContent(toolName, input) {
+  const ti = input || {};
+  if (toolName === 'Bash') return `<div class="fc-code">${highlightBash(ti.command || '')}</div>`;
+  if (toolName === 'Edit') return miniDiff(ti.old_string, ti.new_string);
+  if (toolName === 'Write') {
+    const preview = (ti.content || '').split('\n').slice(0, 6).join('\n');
+    const total = (ti.content || '').split('\n').length;
+    return `<div class="fc-code">${esc(preview)}</div>${total > 6 ? `<div class="diff-more">... ${total} total lines</div>` : ''}`;
+  }
+  if (toolName === 'Agent') return `<div style="font-size:14px;line-height:1.5;color:var(--text);">${esc(ti.description || ti.prompt || '')}</div>`;
+  if (toolName === 'Grep') return `<div class="fc-code">${esc(ti.pattern || '')}</div>`;
+  if (toolName === 'WebFetch') return `<div class="fc-code" style="word-break:break-all;">${esc(ti.url || '')}</div>`;
+  if (toolName === 'WebSearch') return `<div style="font-size:14px;color:var(--text);">${esc(ti.query || '')}</div>`;
+  const detail = ti.file_path || ti.pattern || ti.command || JSON.stringify(ti).slice(0, 200);
+  return `<div class="fc-code">${esc(detail)}</div>`;
+}
+
+function renderFixedCard(p) {
+  const toolName = p.tool_name || '';
+  const ti = p.tool_input || {};
+  const desc = describePermission(p);
+  const risk = getRiskLevel(toolName, ti);
+  const elapsed = Math.floor((Date.now() - (p.timestamp || Date.now())) / 1000);
+  const remaining = Math.max(0, 120 - elapsed);
+  const hasPath = ti.file_path;
+
+  return `
+    <div class="fc risk-${risk}">
+      <div class="fc-header">
+        <div class="fc-type">
+          ${desc.icon} ${esc(toolName)} <span class="fc-risk ${risk}">${RISK_LABELS[risk]}</span>
+        </div>
+        <div class="fc-title">${esc(desc.title)}</div>
+        ${hasPath ? `<div class="fc-path">${truncPath(ti.file_path)}</div>` : ''}
+        ${p.session_id ? `<div class="fc-session">${sessionTag(p.session_id)}</div>` : ''}
+      </div>
+      <div class="fc-body">
+        ${formatCardContent(toolName, ti)}
+      </div>
+      <div class="fc-footer">
+        ${window.isViewer
+          ? '<div class="fc-viewer-msg">Waiting for admin</div>'
+          : `<div class="fc-actions">
+              <button class="btn fc-btn-deny" onclick="decide('${esc(p.requestId)}', false)">Deny</button>
+              <button class="btn fc-btn-allow" onclick="decide('${esc(p.requestId)}', true)">Allow</button>
+            </div>
+            <div class="fc-timer" data-expires="${(p.timestamp || Date.now()) + 120000}">${remaining}s</div>`}
+      </div>
+    </div>`;
+}
+
+let swipeIdx = 0;
+
 function renderPermissions() {
   const allPerms = state.pending.filter(p => !isRequest(p.tool_name || '', p) && !resolvedRequests.has(p.requestId));
   const perms = filterBySession(allPerms);
   if (perms.length === 0) {
+    swipeIdx = 0;
     return `<div class="empty"><div class="idle-anim"><div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="core"></div></div><p>${t('No pending permissions')}</p><p style="font-size:12px;margin-top:4px;">${t('Claude Code will send requests here when it needs approval')}</p></div>`;
   }
-  return perms.map(p => {
-    if (p.isQuestion) {
-      return renderQuestionCard(p);
-    }
-    return renderPermissionCard(p);
-  }).join('');
+
+  // Desktop: original stacked list
+  if (isDesktop()) {
+    return perms.map(p => p.isQuestion ? renderQuestionCard(p) : renderPermissionCard(p)).join('');
+  }
+
+  // Mobile: fixed card view
+  if (swipeIdx >= perms.length) swipeIdx = perms.length - 1;
+  if (swipeIdx < 0) swipeIdx = 0;
+  const p = perms[swipeIdx];
+
+  return `
+    <div class="swipe-stack" id="swipeStack">
+      <div class="swipe-counter">${swipeIdx + 1} of ${perms.length}</div>
+      <div class="swipe-card-wrap" id="swipeWrap">
+        <div class="swipe-hint swipe-hint-allow" id="swipeHintAllow">ALLOW</div>
+        <div class="swipe-hint swipe-hint-deny" id="swipeHintDeny">DENY</div>
+        <div class="swipe-card" id="swipeCard" data-rid="${esc(p.requestId)}">
+          ${renderFixedCard(p)}
+        </div>
+      </div>
+    </div>`;
 }
 
 function renderRequests() {
@@ -2497,11 +2924,11 @@ function renderRequests() {
           <button class="btn opt-btn" data-rid="${esc(p.requestId)}" data-val="${esc(o.label)}" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:6px;font-size:13px;" aria-label="Select option: ${esc(o.label)}" title="${esc(o.description || '')}">
             ${esc(o.label)}
           </button>`).join('')}</div>` : ''}
-        <div style="display:flex;gap:8px;">
+        ${window.isViewer ? '<div style="font-size:12px;color:var(--dim);font-style:italic;">Waiting for admin</div>' : `<div style="display:flex;gap:8px;">
           <input type="text" id="question-input-${esc(p.requestId)}" aria-label="Type your response to Claude Code" placeholder="Type your response..." style="flex:1;padding:8px 10px;background:var(--bg);border:1px solid var(--accent);color:var(--text);border-radius:6px;font-size:16px;font-family:inherit;outline:none;"
             onkeydown="if(event.key==='Enter'){event.preventDefault();respondToQuestion('${esc(p.requestId)}')}">
           <button class="btn btn-blue" onclick="respondToQuestion('${esc(p.requestId)}')" style="padding:8px 14px;white-space:nowrap;" aria-label="Send response">Send</button>
-        </div>
+        </div>`}
       </div>
     `;
   }).join('');
@@ -2547,7 +2974,7 @@ function renderPermissionCard(p) {
     <div class="perm-card risk-${risk}${isNew ? ' new-card' : ''}" id="perm-${p.requestId}" data-session-id="${esc(p.session_id || '')}">
       <div class="tool-name">${desc.icon} ${esc(desc.title)} <span class="risk-badge risk-${risk}">${RISK_LABELS[risk]}</span> ${sessionTag(p.session_id)}</div>
       <div class="tool-input" style="font-family:monospace;font-size:12px;background:var(--bg);padding:8px;border-radius:6px;margin:6px 0;word-break:break-all;">${esc(desc.detail)}</div>
-      <div class="perm-actions" role="group" aria-label="Actions for ${esc(desc.title)}">
+      ${window.isViewer ? '<div style="margin-top:12px;font-size:12px;color:var(--dim);font-style:italic;">Waiting for admin</div>' : `<div class="perm-actions" role="group" aria-label="Actions for ${esc(desc.title)}">
         <button class="btn btn-allow" onclick="decide('${esc(p.requestId)}', true)" aria-label="${t('Allow')} ${esc(desc.title)}">${ICONS.check} ${t('Allow')}</button>
         <button class="btn btn-deny" onclick="decide('${esc(p.requestId)}', false)" aria-label="${t('Deny')} ${esc(desc.title)}">${ICONS.cross} ${t('Deny')}</button>
         <div class="quick-rules">
@@ -2559,7 +2986,7 @@ function renderPermissionCard(p) {
             ${toolName === 'WebFetch' || toolName === 'WebSearch' ? `<div class="qr-item" role="menuitem" tabindex="0" onclick="addQuickRuleGroup(['WebFetch','WebSearch']); decide('${esc(p.requestId)}', true)">${ t('Always allow all {tools}', { tools: '<strong>' + t('Web tools') + '</strong>' }) }</div>` : ''}
           </div>
         </div>
-      </div>
+      </div>`}
     </div>
   `;
 }
@@ -2576,11 +3003,11 @@ function renderQuestionCard(p) {
         <button class="btn opt-btn" data-rid="${esc(p.requestId)}" data-val="${esc(o.label || o)}" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:6px;font-size:13px;" aria-label="Select option: ${esc(o.label || o)}" title="${esc(o.description || '')}">
           ${esc(o.label || o)}
         </button>`).join('')}</div>` : ''}
-      <div style="display:flex;gap:8px;">
+      ${window.isViewer ? '<div style="font-size:12px;color:var(--dim);font-style:italic;">Waiting for admin</div>' : `<div style="display:flex;gap:8px;">
         <input type="text" id="question-input-${esc(p.requestId)}" aria-label="Response to Claude Code question" placeholder="Type your response..." style="flex:1;padding:8px 10px;background:var(--bg);border:1px solid var(--accent);color:var(--text);border-radius:6px;font-size:16px;font-family:inherit;outline:none;"
           onkeydown="if(event.key==='Enter'){event.preventDefault();respondToQuestion('${esc(p.requestId)}')}">
         <button class="btn btn-blue" onclick="respondToQuestion('${esc(p.requestId)}')" style="padding:8px 14px;white-space:nowrap;" aria-label="Send response">Send</button>
-      </div>
+      </div>`}
     </div>
   `;
 }
@@ -3117,6 +3544,8 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && detailOpen) { closeDetail(); e.preventDefault(); return; }
   // Only operate on desktop split view with pending permissions
   if (!isDesktop() || desktopNavTab) return;
+  // Viewer mode: skip approve/deny keyboard shortcuts
+  if (window.isViewer) return;
 
   const pendingPerms = state.pending.filter(p => !isRequest(p.tool_name || '', p) && !resolvedRequests.has(p.requestId));
   const filteredPerms = filterBySession(pendingPerms);
@@ -3181,19 +3610,25 @@ let _filteredCmds = [];
 
 function getCommands() {
   const cmds = [
-    { icon: 'a', label: t('Approve focused'), hint: 'a', action: () => { const p = getFocusedPerm(); if (p) decide(p.requestId, true); } },
-    { icon: 'd', label: t('Deny focused'), hint: 'd', action: () => { const p = getFocusedPerm(); if (p) decide(p.requestId, false); } },
+    ...(!window.isViewer ? [
+      { icon: 'a', label: t('Approve focused'), hint: 'a', action: () => { const p = getFocusedPerm(); if (p) decide(p.requestId, true); } },
+      { icon: 'd', label: t('Deny focused'), hint: 'd', action: () => { const p = getFocusedPerm(); if (p) decide(p.requestId, false); } },
+    ] : []),
     { icon: '>', label: t('Dashboard'), hint: null, action: () => { desktopNavTab = null; renderDesktopSidebar(); renderDesktopMain(); } },
     { icon: '?', label: t('Requests'), hint: null, action: () => { desktopNavTab = 'requests'; renderDesktopSidebar(); renderDesktopMain(); } },
     { icon: '#', label: t('Claims'), hint: null, action: () => { desktopNavTab = 'claims'; renderDesktopSidebar(); renderDesktopMain(); } },
     { icon: 'S', label: t('Sprint'), hint: null, action: () => { desktopNavTab = 'sprint'; renderDesktopSidebar(); renderDesktopMain(); } },
-    { icon: 'R', label: t('Rules'), hint: null, action: () => { desktopNavTab = 'rules'; renderDesktopSidebar(); renderDesktopMain(); } },
+    ...(!window.isViewer ? [
+      { icon: 'R', label: t('Rules'), hint: null, action: () => { desktopNavTab = 'rules'; renderDesktopSidebar(); renderDesktopMain(); } },
+    ] : []),
     { icon: 'A', label: t('Agents'), hint: null, action: () => { desktopNavTab = 'agents'; renderDesktopSidebar(); renderDesktopMain(); } },
   ];
-  // Trust level commands
+  // Trust level commands (admin only)
+  if (!window.isViewer) {
   ['paranoid', 'standard', 'autonomous'].forEach(level => {
     cmds.push({ icon: 'T', label: t('Trust: {level}', { level }), hint: null, action: () => setTrustLevel(level) });
   });
+  }
   // Quick-approve tool groups
   cmds.push({ icon: '+', label: t('Auto-approve Read tools'), hint: null, action: () => addQuickRuleGroup(['Read', 'Grep', 'Glob']) });
   cmds.push({ icon: '+', label: t('Auto-approve Write tools'), hint: null, action: () => addQuickRuleGroup(['Edit', 'Write']) });
@@ -3298,8 +3733,11 @@ function showPermissionDetail(p) {
   }
   document.getElementById('detailBody').innerHTML = html;
 
-  // Actions
-  if (isQ) {
+  // Actions (hidden for viewer role)
+  if (window.isViewer) {
+    document.getElementById('detailActions').innerHTML =
+      '<div style="font-size:12px;color:var(--dim);font-style:italic;padding:8px 0;">Waiting for admin</div>';
+  } else if (isQ) {
     document.getElementById('detailActions').innerHTML =
       `<input type="text" class="question-input" id="detailQInput" placeholder="${t('Type your response...')}" style="flex:1;" onkeydown="if(event.key==='Enter'){respondToQuestion('${esc(p.requestId)}',this.value);closeDetail();}">
        <button class="btn btn-blue" onclick="respondToQuestion('${esc(p.requestId)}',document.getElementById('detailQInput').value);closeDetail();">${t('Send')}</button>`;
@@ -3383,6 +3821,15 @@ function updateFooterBar() {
     const score = s => (s.pending_count > 0 ? 0 : s.status === 'active' ? 1 : 2);
     return score(a) - score(b);
   });
+
+  // Mobile: show count instead of individual pills
+  if (!isDesktop()) {
+    const totalPending = live.reduce((n, s) => n + (s.pending_count || 0), 0);
+    const parts = [`<span style="color:var(--text);font-weight:600;">${live.length} session${live.length !== 1 ? 's' : ''}</span>`];
+    if (totalPending > 0) parts.push(`<span style="color:var(--orange);font-weight:600;">${totalPending} pending</span>`);
+    el.innerHTML = `<span style="font-size:12px;display:flex;gap:8px;align-items:center;">${parts.join('<span style="color:var(--border);">·</span>')}</span>`;
+    return;
+  }
 
   el.innerHTML = sorted.map(s => {
     const isActive = sessionFilter === s.id;
@@ -3664,7 +4111,7 @@ fetch('/api/sites?token=' + TOKEN).then(r => r.json()).then(sites => {
         // slow shimmer along bracket only — signals reconnecting
         _bracket(ctx, s, TOOL.color, 0.15);
         _drawName(ctx, s, 1, 0.3);
-        var dpts = _getOpenPts(s), dspeed = 2800;
+        var dpts = _getOpenPts(s), dspeed = 1400;
         var dpos = (e % dspeed) / dspeed;
         var didx = Math.floor(dpos * (dpts.length - 1));
         var dpt = dpts[didx];

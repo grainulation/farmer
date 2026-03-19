@@ -78,7 +78,8 @@ Commands:
 
 Options (start):
   --port <n>               Port to listen on (default: 9090)
-  --token <secret>         Auth token (persisted to .farmer-token if omitted)
+  --token <secret>         Admin auth token (a viewer token is auto-generated;
+                           both are persisted as JSON to .farmer-token)
   --trust-proxy            Trust X-Forwarded-For headers
   --data-dir <path>        Directory for state/audit files (default: cwd)
   --max-sessions <n>       Max concurrent sessions (default: 50)

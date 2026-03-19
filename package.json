@@ -1,6 +1,6 @@
 {
   "name": "@grainulation/farmer",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Mobile-first permission dashboard for AI coding agents",
   "license": "MIT",
   "author": "grainulation contributors",
@@ -19,7 +19,8 @@
     "claude-code",
     "agent",
     "developer-tools",
-    "grainulation"
+    "grainulation",
+    "multi-user"
   ],
   "type": "module",
   "main": "./lib/index.js",
