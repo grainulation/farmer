@@ -585,78 +585,64 @@ Sessions: 1 active</div>
         <div class="feature-icon" style="background:var(--accent-dim);color:var(--accent)">
           <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
         </div>
-        <h3>Token Authentication</h3>
-        <p>Two-token model: an admin token for full control and a viewer token for read-only monitoring. Both are persisted to disk so server restarts don't disrupt your workflow. HMAC-signed invite links let you share access securely. Backwards compatible with old plain-text token files.</p>
+        <h3>Auth + Roles</h3>
+        <p>Admin token for full control, viewer token for read-only monitoring. HMAC-signed invite links for sharing access. Tokens persist across server restarts.</p>
       </div>
       <div class="feature-card rv rv-d2">
         <div class="feature-icon" style="background:var(--blue-dim);color:var(--blue)">
           <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
         </div>
         <h3>SSE + Polling</h3>
-        <p>Server-Sent Events for real-time streaming. Polling as automatic fallback. Zero npm dependencies. Permission cards stream the instant they are requested.</p>
+        <p>Server-Sent Events for real-time streaming with polling as automatic fallback. Permission cards appear the instant they are requested.</p>
       </div>
       <div class="feature-card rv rv-d3">
         <div class="feature-icon" style="background:var(--purple-dim);color:var(--purple)">
           <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         </div>
         <h3>Multi-Session</h3>
-        <p>Run multiple AI agents at once. Each gets its own session with independent trust levels. New sessions inherit trust from their parent.</p>
+        <p>Run multiple AI agents at once. Each gets its own session with independent trust levels and rules. New sessions inherit trust from their parent.</p>
       </div>
       <div class="feature-card rv rv-d4">
+        <div class="feature-icon" style="background:var(--red-dim);color:var(--red)">
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        </div>
+        <h3>Mobile-First</h3>
+        <p>Designed for phone screens. Swipe cards for fast permission decisions, syntax-highlighted diffs, large tap targets. Add to home screen for native-like experience.</p>
+      </div>
+      <div class="feature-card rv">
         <div class="feature-icon" style="background:var(--orange-dim);color:var(--orange)">
           <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         </div>
         <h3>Adapter Pattern</h3>
-        <p>Agent-specific logic is isolated in adapters. Ship with a Claude Code adapter, swap in your own for other agents. The core protocol stays the same.</p>
+        <p>Agent-specific logic is isolated in adapters. Ships with a Claude Code adapter. Swap in your own for other agents — the core protocol stays the same.</p>
       </div>
       <div class="feature-card rv">
         <div class="feature-icon" style="background:rgba(255,255,255,.06);color:var(--text-2)">
           <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         </div>
         <h3>Audit Logging</h3>
-        <p>Every approve, deny, and auto-decision is logged to a JSONL file with timestamps, session IDs, and tool details. Full accountability. <strong style="color:#fff;font-size:110%"><span style="color:#fb923c">h</span>arvest</strong> can analyze these logs for usage patterns.</p>
-      </div>
-      <div class="feature-card rv">
-        <div class="feature-icon" style="background:var(--red-dim);color:var(--red)">
-          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-        </div>
-        <h3>Mobile-First</h3>
-        <p>The dashboard is designed for phone screens first. Large tap targets, responsive layout, no zoom issues. Add to your home screen for native-like experience.</p>
+        <p>Every approve, deny, and auto-decision is logged to JSONL with timestamps and session IDs. <strong style="color:#fff;font-size:110%"><span style="color:#fb923c">h</span>arvest</strong> can analyze these logs for usage patterns.</p>
       </div>
       <div class="feature-card rv">
         <div class="feature-icon" style="background:var(--green-dim);color:var(--green)">
           <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
         </div>
         <h3>Cloudflare Tunnel</h3>
-        <p>Built-in support for cloudflared tunnels. Expose your local server to the internet securely. Approve agent actions from anywhere in the world.</p>
+        <p>Built-in cloudflared support. Expose your local server securely and approve agent actions from anywhere in the world.</p>
       </div>
       <div class="feature-card rv">
         <div class="feature-icon" style="background:var(--accent-dim);color:var(--accent)">
           <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </div>
         <h3>Sprint Detection</h3>
-        <p>Watches claims.json and compilation.json for changes. The dashboard shows which <strong style="color:#fff;font-size:110%"><span style="color:#fbbf24">w</span>heat</strong> sprint your agent is working in. <strong style="color:#fff;font-size:110%"><span style="color:#e11d48">b</span>arn</strong> provides the detection logic.</p>
+        <p>Watches claims.json and compilation.json for changes. The dashboard shows which <strong style="color:#fff;font-size:110%"><span style="color:#fbbf24">w</span>heat</strong> sprint your agent is working in.</p>
       </div>
       <div class="feature-card rv">
         <div class="feature-icon" style="background:var(--orange-dim);color:var(--orange)">
           <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
         </div>
         <h3>Feedback Queue</h3>
-        <p>Send feedback to your agent without switching to the terminal. The poll/ack pattern ensures messages are delivered even if the agent is mid-task.</p>
-      </div>
-      <div class="feature-card rv">
-        <div class="feature-icon" style="background:var(--purple-dim);color:var(--purple)">
-          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-        </div>
-        <h3>Multi-User Roles</h3>
-        <p>Admin role for full control — approve, deny, change settings. Viewer role for read-only dashboard monitoring without the ability to act. Invite links with configurable expiry for sharing access. The /connect page shows dual QR codes for easy phone pairing.</p>
-      </div>
-      <div class="feature-card rv">
-        <div class="feature-icon" style="background:var(--green-dim);color:var(--green)">
-          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 22h6"/><path d="M7 10h10M7 14h6"/></svg>
-        </div>
-        <h3>Mobile UX</h3>
-        <p>Swipe card view for fast permission decisions on mobile. Syntax-highlighted code in permission cards so you can read diffs at a glance. Session count in the footer instead of individual pills to keep the interface clean on small screens.</p>
+        <p>Send feedback to your agent without switching to the terminal. Poll/ack delivery ensures messages arrive even if the agent is mid-task.</p>
       </div>
     </div>
   </div>
