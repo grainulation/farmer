@@ -1,6 +1,6 @@
 {
   "name": "@grainulation/farmer",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Mobile-first permission dashboard for AI coding agents",
   "license": "MIT",
   "author": "grainulation contributors",
@@ -29,7 +29,8 @@
     "./server": "./lib/server.js",
     "./security": "./lib/security.js",
     "./persistence": "./lib/persistence.js",
-    "./compact-context": "./lib/compact-context.js"
+    "./compact-context": "./lib/compact-context.js",
+    "./connect": "./lib/connect.js"
   },
   "bin": {
     "farmer": "bin/farmer.js"

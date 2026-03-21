@@ -1890,6 +1890,8 @@ function trySSE() {
       if (liveTransport !== 'sse' || sseRetryCount > 0) {
         liveTransport = 'sse';
         sseRetryCount = 0;
+        _expectTrustEcho = 0;
+        _expectRulesEcho = 0;
         if (sseRetryTimer) { clearTimeout(sseRetryTimer); sseRetryTimer = null; }
         updateConnectionBanner(null);
       }
@@ -1998,14 +2000,19 @@ async function poll() {
     prevPendingIds = new Set(freshPending.map(p => p.id || p.requestId));
 
     // Only re-render if data actually changed
+    // Suppress poll overwrite of trust/rules if user changed them recently (d008)
+    const now_poll = Date.now();
+    const POLL_GUARD_MS = 3000;
+    const pollTrust = (now_poll - _lastUserTrustChange > POLL_GUARD_MS) ? data.trustLevel : state.trustLevel;
+    const pollRules = (now_poll - _lastUserRulesChange > POLL_GUARD_MS) ? (data.sessionRules || []) : state.sessionRules;
     const newState = {
       pending: freshPending,
       activity: data.activity || [],
       messages: data.messages || [],
       claims: data.claims,
       compilation: data.compilation,
-      trustLevel: data.trustLevel,
-      sessionRules: data.sessionRules || [],
+      trustLevel: pollTrust,
+      sessionRules: pollRules,
       agents: data.agents || [],
       sessions: data.sessions || [],
     };
@@ -2130,10 +2137,14 @@ function handleMessage(msg) {
       state.activeSprint = (msg.data || []).find(s => s.active)?.slug || null;
       break;
     case 'trust_level':
+      // SSE echo suppression (d001, d007)
+      if (_expectTrustEcho > 0) { _expectTrustEcho--; break; }
       state.trustLevel = msg.data.level;
       updateTrustBadge();
       break;
     case 'rules_updated':
+      // SSE echo suppression (d001, d007)
+      if (_expectRulesEcho > 0) { _expectRulesEcho--; break; }
       state.sessionRules = msg.data.sessionRules;
       break;
     case 'agent_start':
@@ -2153,12 +2164,13 @@ function handleMessage(msg) {
       if (idx >= 0) state.sessions[idx] = sd;
       else (state.sessions = state.sessions || []).push(sd);
       renderSessionBar();
+      updateFooterBar();
       // Notify user of new sessions so they aren't surprised
       if (msg.type === 'session_new') {
         const trustLabel = sd.trust || state.trustLevel || 'paranoid';
         showToast(`New session: ${sd.label || sd.id} (${trustLabel})`);
       }
-      break;
+      return; // Selective render (d009) — skip catch-all render()
     }
     case 'session_stale':
     case 'session_end': {
@@ -2167,7 +2179,8 @@ function handleMessage(msg) {
       if (idx >= 0) state.sessions[idx] = sd;
       else (state.sessions = state.sessions || []).push(sd);
       renderSessionBar();
-      break;
+      updateFooterBar();
+      return; // Selective render — skip catch-all render()
     }
     case 'heartbeat':
       updateHeartbeatBanner(msg.data);
@@ -2306,40 +2319,97 @@ function toggleSprintSwitcher() {
   render();
 }
 
+// --- Echo suppression counters (d001, d007) ---
+let _expectTrustEcho = 0;
+let _expectRulesEcho = 0;
+let _lastUserTrustChange = 0;
+let _lastUserRulesChange = 0;
+
 async function setTrustLevel(level) {
-  await postJSON(API('/api/trust-level'), { level });
+  const prev = state.trustLevel;
+  // Optimistic update (d003) — render before POST
   state.trustLevel = level;
+  _lastUserTrustChange = Date.now();
   updateTrustBadge();
   render();
+  _expectTrustEcho++;
+  setTimeout(() => { if (_expectTrustEcho > 0) _expectTrustEcho = 0; }, 5000);
+  try {
+    await postJSON(API('/api/trust-level'), { level });
+  } catch {
+    _expectTrustEcho = Math.max(0, _expectTrustEcho - 1);
+    state.trustLevel = prev;
+    updateTrustBadge(); render();
+  }
 }
 
 async function toggleRule(tool) {
+  // Optimistic update (d003) — apply locally before POST
+  const prevRules = [...state.sessionRules];
   const existing = state.sessionRules.find(r => r.tool === tool && !r.pattern);
   const action = existing ? 'remove' : 'add';
-  const resp = await postJSON(API('/api/rules'), { action, rule: { tool } });
-  const data = await resp.json();
-  if (data.sessionRules) state.sessionRules = data.sessionRules;
+  if (existing) {
+    state.sessionRules = state.sessionRules.filter(r => !(r.tool === tool && !r.pattern));
+  } else {
+    state.sessionRules = [...state.sessionRules, { tool, pattern: null }];
+  }
+  _lastUserRulesChange = Date.now();
   render();
+  _expectRulesEcho++;
+  setTimeout(() => { if (_expectRulesEcho > 0) _expectRulesEcho = 0; }, 5000);
+  try {
+    const resp = await postJSON(API('/api/rules'), { action, rule: { tool } });
+    const data = await resp.json();
+    // Silently reconcile with server truth
+    if (data.sessionRules) state.sessionRules = data.sessionRules;
+  } catch {
+    _expectRulesEcho = Math.max(0, _expectRulesEcho - 1);
+    state.sessionRules = prevRules;
+    render();
+  }
 }
 
 async function addQuickRule(tool) {
   const existing = state.sessionRules.find(r => r.tool === tool && !r.pattern);
   if (!existing) {
-    const resp = await postJSON(API('/api/rules'), { action: 'add', rule: { tool } });
-    const data = await resp.json();
-    if (data.sessionRules) state.sessionRules = data.sessionRules;
+    const prevRules = [...state.sessionRules];
+    // Optimistic update
+    state.sessionRules = [...state.sessionRules, { tool, pattern: null }];
+    _lastUserRulesChange = Date.now();
+    _expectRulesEcho++;
+    setTimeout(() => { if (_expectRulesEcho > 0) _expectRulesEcho = 0; }, 5000);
+    try {
+      const resp = await postJSON(API('/api/rules'), { action: 'add', rule: { tool } });
+      const data = await resp.json();
+      if (data.sessionRules) state.sessionRules = data.sessionRules;
+    } catch {
+      _expectRulesEcho = Math.max(0, _expectRulesEcho - 1);
+      state.sessionRules = prevRules;
+    }
   }
   openQuickRules = null;
   render();
 }
 
 async function addQuickRuleGroup(tools) {
-  for (const tool of tools) {
-    const existing = state.sessionRules.find(r => r.tool === tool && !r.pattern);
-    if (!existing) {
-      const resp = await postJSON(API('/api/rules'), { action: 'add', rule: { tool } });
+  // Batch rule changes (d002) — single POST instead of N sequential ones
+  const newRules = tools.filter(tool => !state.sessionRules.find(r => r.tool === tool && !r.pattern));
+  if (newRules.length > 0) {
+    const prevRules = [...state.sessionRules];
+    // Optimistic update — add all at once
+    for (const tool of newRules) {
+      state.sessionRules = [...state.sessionRules, { tool, pattern: null }];
+    }
+    _lastUserRulesChange = Date.now();
+    _expectRulesEcho++;
+    setTimeout(() => { if (_expectRulesEcho > 0) _expectRulesEcho = 0; }, 5000);
+    try {
+      const resp = await postJSON(API('/api/rules'), { action: 'add', rules: newRules.map(t => ({ tool: t })) });
       const data = await resp.json();
       if (data.sessionRules) state.sessionRules = data.sessionRules;
+    } catch {
+      _expectRulesEcho = Math.max(0, _expectRulesEcho - 1);
+      state.sessionRules = prevRules;
     }
   }
   openQuickRules = null;
@@ -2347,9 +2417,21 @@ async function addQuickRuleGroup(tools) {
 }
 
 async function removeRule(tool, pattern) {
-  const resp = await postJSON(API('/api/rules'), { action: 'remove', rule: { tool, pattern: pattern || undefined } });
-  const data = await resp.json();
-  if (data.sessionRules) state.sessionRules = data.sessionRules;
+  const prevRules = [...state.sessionRules];
+  // Optimistic update — remove locally before POST
+  state.sessionRules = state.sessionRules.filter(r => !(r.tool === tool && (pattern ? r.pattern === pattern : !r.pattern)));
+  _lastUserRulesChange = Date.now();
+  _expectRulesEcho++;
+  setTimeout(() => { if (_expectRulesEcho > 0) _expectRulesEcho = 0; }, 5000);
+  render();
+  try {
+    const resp = await postJSON(API('/api/rules'), { action: 'remove', rule: { tool, pattern: pattern || undefined } });
+    const data = await resp.json();
+    if (data.sessionRules) state.sessionRules = data.sessionRules;
+  } catch {
+    _expectRulesEcho = Math.max(0, _expectRulesEcho - 1);
+    state.sessionRules = prevRules;
+  }
   render();
 }
 
@@ -2726,6 +2808,42 @@ document.addEventListener('touchend', () => {
   _swipeDx = 0;
 });
 
+// Dynamic favicon with status dot
+const _favCanvas = document.createElement('canvas');
+_favCanvas.width = 64; _favCanvas.height = 64;
+let _lastFavStatus = '';
+
+function updateFavicon(status) {
+  if (status === _lastFavStatus) return;
+  _lastFavStatus = status;
+  const ctx = _favCanvas.getContext('2d');
+  ctx.clearRect(0, 0, 64, 64);
+  // Background
+  ctx.fillStyle = '#0a0e1a';
+  ctx.beginPath(); ctx.roundRect(0, 0, 64, 64, 14); ctx.fill();
+  // F letter
+  ctx.fillStyle = '#3b82f6';
+  ctx.font = '800 34px -apple-system, system-ui, sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('F', 32, 34);
+  // Status dot
+  if (status) {
+    const dotColor = status === 'pending' ? '#f59e0b' : status === 'connected' ? '#22c55e' : '#ef4444';
+    ctx.fillStyle = dotColor;
+    ctx.beginPath(); ctx.arc(52, 12, 10, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#0a0e1a'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(52, 12, 10, 0, Math.PI * 2); ctx.stroke();
+    // Count in dot if pending
+    if (status === 'pending') {
+      ctx.fillStyle = '#0a0e1a'; ctx.font = '700 12px -apple-system, sans-serif';
+      ctx.fillText(String(Math.min(_lastPendingCount, 9)), 52, 13);
+    }
+  }
+  const link = document.querySelector('link[rel="icon"]');
+  if (link) link.href = _favCanvas.toDataURL();
+}
+let _lastPendingCount = 0;
+
 function updateBadge() {
   // Filter out stale items (>130s = already timed out server-side) before badge count
   const now = Date.now();
@@ -2739,7 +2857,12 @@ function updateBadge() {
   rb.style.display = reqs.length > 0 ? 'inline-block' : 'none';
   rb.textContent = reqs.length;
   const total = fresh.length;
+  _lastPendingCount = total;
   document.title = total > 0 ? t('({total}) Farmer', { total }) : t('Farmer');
+  // Update favicon status dot
+  const dot = document.getElementById('statusDot');
+  const connected = dot && dot.classList.contains('connected');
+  updateFavicon(total > 0 ? 'pending' : connected ? 'connected' : 'disconnected');
 }
 
 let feedbackPending = false;

@@ -6,6 +6,7 @@
  *   farmer start [--port 9090] [--token <secret>] [--trust-proxy] [--data-dir <path>]
  *   farmer stop
  *   farmer status
+ *   farmer connect [--global]
  */
 
 // Node version gate — fail fast with a clear message on Node < 18
@@ -24,6 +25,7 @@ import { join, resolve } from 'node:path';
 import { existsSync, readFileSync } from 'node:fs';
 import { FarmerServer } from '../lib/server.js';
 import { PidLock } from '../lib/security.js';
+import { connect, hasGlobalHooks, hasProjectHooks } from '../lib/connect.js';
 
 const verbose = process.argv.includes('--verbose');
 function vlog(...a) {
@@ -75,6 +77,11 @@ Commands:
   start    Start the dashboard server (default)
   stop     Stop a running instance
   status   Check if Farmer is running
+  connect  Install Claude Code hooks (one-command setup)
+
+Options (connect):
+  --global               Install hooks in ~/.claude/settings.json (all projects)
+                         Without --global, installs in ./.claude/settings.json
 
 Options (start):
   --port <n>               Port to listen on (default: 9090)
@@ -160,11 +167,20 @@ switch (command) {
     }
     try {
       process.kill(pid, 'SIGTERM');
-      console.log(`Sent SIGTERM to Farmer (PID ${pid}).`);
+      console.log(`Stopping Farmer (PID ${pid})...`);
+      // Wait up to 3s for process to exit
+      for (let i = 0; i < 30; i++) {
+        await new Promise(r => setTimeout(r, 100));
+        try { process.kill(pid, 0); } catch { pidLock.forceRelease(); console.log('Stopped.'); process.exit(0); }
+      }
+      // Still alive after 3s — force kill
+      try { process.kill(pid, 'SIGKILL'); } catch {}
+      pidLock.forceRelease();
+      console.log('Force-killed.');
     } catch (err) {
       if (err.code === 'ESRCH') {
         console.log(`Farmer (PID ${pid}) is not running. Cleaning stale PID file.`);
-        pidLock.release();
+        pidLock.forceRelease();
       } else {
         console.error(`farmer: failed to stop: ${err.message}`);
         process.exit(1);
@@ -199,8 +215,19 @@ switch (command) {
     break;
   }
 
+  case 'connect': {
+    const isGlobal = args.includes('--global');
+    connect({ global: isGlobal, cwd: process.cwd(), dataDir }).then(() => {
+      process.exit(0);
+    }).catch((err) => {
+      console.error(`\n  Error: ${err.message}\n`);
+      process.exit(1);
+    });
+    break;
+  }
+
   default:
     console.error(`farmer: unknown command: ${command}`);
-    console.error('Usage: farmer <start|stop|status> [options]');
+    console.error('Usage: farmer <start|stop|status|connect> [options]');
     process.exit(1);
 }

@@ -19,12 +19,16 @@ npm install -g @grainulation/farmer
 ## Quick start
 
 ```bash
-# Start the dashboard
-farmer start --port 9090
+# 1. Install hooks (once)
+farmer connect --global   # all projects, or:
+farmer connect            # current project only
 
-# The token URL is printed to the terminal -- open it in your browser
-# Configure Claude Code hooks to point at Farmer:
-farmer start  # prints hook configuration instructions
+# 2. Start the dashboard
+farmer start
+
+# 3. Open the token URL printed to the terminal
+
+# 4. Start claude in any project -- hooks route automatically
 ```
 
 ## Features
@@ -59,6 +63,7 @@ Farmer exposes four hook endpoints. All accept POST with JSON body, localhost on
 | `/hooks/activity` | Tool completion events (non-blocking) |
 | `/hooks/notification` | Messages, questions, agent events (non-blocking) |
 | `/hooks/lifecycle` | Session start/end events |
+| `/hooks/stop` | Graceful shutdown signal |
 
 ## Writing an adapter
 
@@ -84,6 +89,7 @@ bin/farmer.js          CLI entry point (start/stop/status)
 lib/server.js          Core HTTP + SSE server
 lib/adapters/          Agent adapter interface + Claude Code adapter
 lib/persistence.js     State persistence (atomic write, debounced)
+lib/connect.js         One-step hook installation and settings.json management
 lib/security.js        Token auth, CSRF, CSP, PID lock, audit log
 public/index.html      Dashboard (inline JS, no build step)
 ```
