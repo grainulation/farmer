@@ -11,48 +11,50 @@
 
 // Node version gate — fail fast with a clear message on Node < 18
 {
-  const [major] = process.versions.node.split('.').map(Number);
+  const [major] = process.versions.node.split(".").map(Number);
   if (major < 18) {
     console.error(
       `\n  Error: Node 18+ is required, but you are running ${process.version}.\n` +
-      `  Please upgrade Node.js: https://nodejs.org/\n`
+        `  Please upgrade Node.js: https://nodejs.org/\n`,
     );
     process.exit(1);
   }
 }
 
-import { join, resolve } from 'node:path';
-import { existsSync, readFileSync } from 'node:fs';
-import { FarmerServer } from '../lib/server.js';
-import { PidLock } from '../lib/security.js';
-import { connect, hasGlobalHooks, hasProjectHooks } from '../lib/connect.js';
+import { join, resolve } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { FarmerServer } from "../lib/server.js";
+import { PidLock } from "../lib/security.js";
+import { connect, hasGlobalHooks, hasProjectHooks } from "../lib/connect.js";
 
-const verbose = process.argv.includes('--verbose');
+const verbose = process.argv.includes("--verbose");
 function vlog(...a) {
   if (!verbose) return;
   const ts = new Date().toISOString();
-  process.stderr.write(`[${ts}] farmer: ${a.join(' ')}\n`);
+  process.stderr.write(`[${ts}] farmer: ${a.join(" ")}\n`);
 }
 export { vlog, verbose };
 
 const args = process.argv.slice(2);
-const command = args[0] || 'start';
+const command = args[0] || "start";
 
-vlog('startup', `command=${command}`, `cwd=${process.cwd()}`);
+vlog("startup", `command=${command}`, `cwd=${process.cwd()}`);
 
 function arg(name, fallback) {
   const i = args.indexOf(`--${name}`);
   return i !== -1 && args[i + 1] ? args[i + 1] : fallback;
 }
 
-const dataDir = resolve(arg('data-dir', process.cwd()));
+const dataDir = resolve(arg("data-dir", process.cwd()));
 
 // Load .farmer-config.json (optional — CLI flags override)
 let fileConfig = {};
 for (const searchDir of [process.cwd(), dataDir]) {
-  const configPath = join(searchDir, '.farmer-config.json');
+  const configPath = join(searchDir, ".farmer-config.json");
   if (existsSync(configPath)) {
-    try { fileConfig = JSON.parse(readFileSync(configPath, 'utf8')); } catch {}
+    try {
+      fileConfig = JSON.parse(readFileSync(configPath, "utf8"));
+    } catch {}
     break;
   }
 }
@@ -66,9 +68,9 @@ function cfg(name, fallback) {
   return fallback;
 }
 
-const pidLock = new PidLock(join(dataDir, '.farmer.pid'));
+const pidLock = new PidLock(join(dataDir, ".farmer.pid"));
 
-if (command === '--help' || command === '-h' || command === 'help') {
+if (command === "--help" || command === "-h" || command === "help") {
   console.log(`Farmer — permission dashboard for AI coding agents
 
 Usage: farmer <command> [options]
@@ -113,73 +115,94 @@ Examples:
   process.exit(0);
 }
 
-if (command === '--version' || command === '-v') {
-  const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+if (command === "--version" || command === "-v") {
+  const pkg = JSON.parse(
+    readFileSync(new URL("../package.json", import.meta.url), "utf8"),
+  );
   console.log(`farmer v${pkg.version}`);
   process.exit(0);
 }
 
 switch (command) {
-  case 'start': {
-    const claimsPath = cfg('claims', '');
-    const compilationPath = cfg('compilation', '') || (claimsPath ? resolve(join(resolve(claimsPath, '..'), 'compilation.json')) : '');
+  case "start": {
+    const claimsPath = cfg("claims", "");
+    const compilationPath =
+      cfg("compilation", "") ||
+      (claimsPath
+        ? resolve(join(resolve(claimsPath, ".."), "compilation.json"))
+        : "");
 
     // Parse registered projects from config (array) or CLI (comma-separated)
     let registeredProjects = [];
-    if (fileConfig.registeredProjects && Array.isArray(fileConfig.registeredProjects)) {
-      registeredProjects = fileConfig.registeredProjects.map(p => resolve(p));
+    if (
+      fileConfig.registeredProjects &&
+      Array.isArray(fileConfig.registeredProjects)
+    ) {
+      registeredProjects = fileConfig.registeredProjects.map((p) => resolve(p));
     }
-    const cliProjects = arg('registered-projects', undefined);
-    if (cliProjects) registeredProjects = cliProjects.split(',').map(p => resolve(p.trim()));
+    const cliProjects = arg("registered-projects", undefined);
+    if (cliProjects)
+      registeredProjects = cliProjects.split(",").map((p) => resolve(p.trim()));
 
     // Parse rate limits from config
     let rateLimit = undefined;
-    if (fileConfig.rateLimit && typeof fileConfig.rateLimit === 'object') {
+    if (fileConfig.rateLimit && typeof fileConfig.rateLimit === "object") {
       rateLimit = fileConfig.rateLimit;
     }
 
     const server = new FarmerServer({
-      port: parseInt(cfg('port', '9090'), 10),
-      token: arg('token', undefined),
-      trustProxy: args.includes('--trust-proxy') || fileConfig.trustProxy === true,
+      port: parseInt(cfg("port", "9090"), 10),
+      token: arg("token", undefined),
+      trustProxy:
+        args.includes("--trust-proxy") || fileConfig.trustProxy === true,
       dataDir,
-      maxSessions: parseInt(cfg('max-sessions', '50'), 10),
-      tokenRotationInterval: parseInt(cfg('token-rotation-interval', '0'), 10),
-      tokenGracePeriod: parseInt(cfg('token-grace-period', '60'), 10),
-      claimsPath: claimsPath ? resolve(claimsPath) : '',
-      compilationPath: compilationPath ? resolve(compilationPath) : '',
+      maxSessions: parseInt(cfg("max-sessions", "50"), 10),
+      tokenRotationInterval: parseInt(cfg("token-rotation-interval", "0"), 10),
+      tokenGracePeriod: parseInt(cfg("token-grace-period", "60"), 10),
+      claimsPath: claimsPath ? resolve(claimsPath) : "",
+      compilationPath: compilationPath ? resolve(compilationPath) : "",
       registeredProjects,
-      tunnelName: cfg('tunnel-name', ''),
-      tunnelHostname: cfg('tunnel-hostname', ''),
+      tunnelName: cfg("tunnel-name", ""),
+      tunnelHostname: cfg("tunnel-hostname", ""),
       rateLimit,
-      noTunnel: args.includes('--no-tunnel'),
-      noOpen: args.includes('--no-open'),
+      noTunnel: args.includes("--no-tunnel"),
+      noOpen: args.includes("--no-open"),
     });
     server.start();
     break;
   }
 
-  case 'stop': {
+  case "stop": {
     const pid = pidLock.readPid();
     if (!pid) {
-      console.log('No running Farmer instance found.');
+      console.log("No running Farmer instance found.");
       process.exit(0);
     }
     try {
-      process.kill(pid, 'SIGTERM');
+      process.kill(pid, "SIGTERM");
       console.log(`Stopping Farmer (PID ${pid})...`);
       // Wait up to 3s for process to exit
       for (let i = 0; i < 30; i++) {
-        await new Promise(r => setTimeout(r, 100));
-        try { process.kill(pid, 0); } catch { pidLock.forceRelease(); console.log('Stopped.'); process.exit(0); }
+        await new Promise((r) => setTimeout(r, 100));
+        try {
+          process.kill(pid, 0);
+        } catch {
+          pidLock.forceRelease();
+          console.log("Stopped.");
+          process.exit(0);
+        }
       }
       // Still alive after 3s — force kill
-      try { process.kill(pid, 'SIGKILL'); } catch {}
+      try {
+        process.kill(pid, "SIGKILL");
+      } catch {}
       pidLock.forceRelease();
-      console.log('Force-killed.');
+      console.log("Force-killed.");
     } catch (err) {
-      if (err.code === 'ESRCH') {
-        console.log(`Farmer (PID ${pid}) is not running. Cleaning stale PID file.`);
+      if (err.code === "ESRCH") {
+        console.log(
+          `Farmer (PID ${pid}) is not running. Cleaning stale PID file.`,
+        );
         pidLock.forceRelease();
       } else {
         console.error(`farmer: failed to stop: ${err.message}`);
@@ -189,14 +212,14 @@ switch (command) {
     break;
   }
 
-  case 'status': {
-    const jsonMode = args.includes('--json');
+  case "status": {
+    const jsonMode = args.includes("--json");
     const pid = pidLock.readPid();
     if (!pid) {
       if (jsonMode) {
         console.log(JSON.stringify({ running: false, pid: null }));
       } else {
-        console.log('Farmer is not running.');
+        console.log("Farmer is not running.");
       }
       process.exit(1);
     }
@@ -209,25 +232,29 @@ switch (command) {
       console.log(`Farmer is running (PID ${pid}).`);
       process.exit(0);
     } else {
-      console.log(`Farmer PID file exists (PID ${pid}) but process is not running.`);
+      console.log(
+        `Farmer PID file exists (PID ${pid}) but process is not running.`,
+      );
       process.exit(1);
     }
     break;
   }
 
-  case 'connect': {
-    const isGlobal = args.includes('--global');
-    connect({ global: isGlobal, cwd: process.cwd(), dataDir }).then(() => {
-      process.exit(0);
-    }).catch((err) => {
-      console.error(`\n  Error: ${err.message}\n`);
-      process.exit(1);
-    });
+  case "connect": {
+    const isGlobal = args.includes("--global");
+    connect({ global: isGlobal, cwd: process.cwd(), dataDir })
+      .then(() => {
+        process.exit(0);
+      })
+      .catch((err) => {
+        console.error(`\n  Error: ${err.message}\n`);
+        process.exit(1);
+      });
     break;
   }
 
   default:
     console.error(`farmer: unknown command: ${command}`);
-    console.error('Usage: farmer <start|stop|status|connect> [options]');
+    console.error("Usage: farmer <start|stop|status|connect> [options]");
     process.exit(1);
 }
