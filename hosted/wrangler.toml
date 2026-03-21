@@ -1,0 +1,20 @@
+name = "farmer-hosted"
+main = "src/index.js"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+[durable_objects]
+bindings = [
+  { name = "SPRINT_SESSIONS", class_name = "SprintSession" }
+]
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["SprintSession"]
+
+[[routes]]
+pattern = "farmer.grainulation.com/*"
+zone_name = "grainulation.com"
+
+# [vars]
+# JWT_PUBLIC_KEY = "" # Set via wrangler secret or dashboard
