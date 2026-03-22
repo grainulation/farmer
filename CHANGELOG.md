@@ -5,14 +5,17 @@
 Connect command and permission state reliability.
 
 ### Added
+
 - farmer connect [--global] command for one-step hook installation
 - Startup hint when no hooks detected
 - Dynamic favicon with status dot (green=connected, orange=pending with count, red=disconnected)
 
 ### Changed
+
 - Login page redesigned with blue theme, favicon, glass effect
 
 ### Fixed
+
 - Permission state flicker -- optimistic updates, SSE echo suppression with 5s safety timeout, rollback on POST failure
 - Batched rule changes -- addQuickRuleGroup sends single POST, server applies atomically
 - Poll overwrite guard -- 3s cooldown after user changes prevents poll from reverting trust/rules
@@ -28,6 +31,7 @@ Connect command and permission state reliability.
 Multi-user support with role-based access control.
 
 ### Added
+
 - Two-token auth: separate admin and viewer roles with independent tokens
 - HMAC-signed invite links with configurable expiry for secure onboarding
 - Viewer UI: admin controls hidden, VIEWER badge displayed, read-only permission cards, "Waiting for admin" labels on pending decisions
@@ -39,11 +43,13 @@ Multi-user support with role-based access control.
 - Formatted code in permission cards: bash syntax highlighting, diff view, path truncation
 
 ### Changed
+
 - Token file migrated from plain text to JSON format (backwards compatible with plain text files)
 - Paranoid trust mode now overrides session-level trust rules
 - SSE reconnection: any successful poll resets SSE retry state
 
 ### Security
+
 - Admin token no longer leaked to viewer HTML payload
 - token_rotated broadcast events filtered to admin-only SSE streams
 

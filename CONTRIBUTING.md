@@ -16,16 +16,20 @@ Farmer has zero npm dependencies. Everything is Node built-ins.
 ## How to contribute
 
 ### Report a bug
+
 Open an issue with:
+
 - What you expected
 - What happened instead
 - Your Node version (`node --version`)
 - Steps to reproduce
 
 ### Suggest a feature
+
 Open an issue describing the use case, not just the solution. "I need X because Y" is more useful than "add X."
 
 ### Submit a PR
+
 1. Fork the repo
 2. Create a branch (`git checkout -b fix/description`)
 3. Make your changes
@@ -34,7 +38,9 @@ Open an issue describing the use case, not just the solution. "I need X because 
 6. Open a PR
 
 ### Important invariants
+
 Farmer has critical invariants that must not regress:
+
 - Server split architecture (desktop + mobile)
 - SSE for real-time streaming, polling as fallback
 - Two-token auth (admin + viewer) and JSON token persistence across restarts
@@ -76,11 +82,13 @@ Tests use Node's built-in test runner. No test framework dependencies.
 ## Commit messages
 
 Follow the existing pattern:
+
 ```
 farmer: <what changed>
 ```
 
 Examples:
+
 ```
 farmer: add session expiry notification
 farmer: fix token persistence across restart

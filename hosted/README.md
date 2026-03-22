@@ -11,17 +11,17 @@ Hosted deployment of the Farmer permission dashboard on Cloudflare Workers + Dur
 
 ### URL Routing
 
-| Endpoint | Method | Description |
-|---|---|---|
-| `/<token>` | GET | Serve dashboard HTML |
-| `/<token>/ws` | GET (Upgrade) | WebSocket connection to DO |
-| `/<token>/hooks/permission` | POST | Permission request from CLI |
-| `/<token>/hooks/activity` | POST | Activity event from CLI |
-| `/<token>/hooks/notification` | POST | Notification from CLI |
-| `/<token>/hooks/lifecycle` | POST | Session start/end from CLI |
-| `/<token>/api/state` | GET | Full state snapshot |
-| `/<token>/api/decide` | POST | Approve/deny permission |
-| `/health` | GET | Health check |
+| Endpoint                      | Method        | Description                 |
+| ----------------------------- | ------------- | --------------------------- |
+| `/<token>`                    | GET           | Serve dashboard HTML        |
+| `/<token>/ws`                 | GET (Upgrade) | WebSocket connection to DO  |
+| `/<token>/hooks/permission`   | POST          | Permission request from CLI |
+| `/<token>/hooks/activity`     | POST          | Activity event from CLI     |
+| `/<token>/hooks/notification` | POST          | Notification from CLI       |
+| `/<token>/hooks/lifecycle`    | POST          | Session start/end from CLI  |
+| `/<token>/api/state`          | GET           | Full state snapshot         |
+| `/<token>/api/decide`         | POST          | Approve/deny permission     |
+| `/health`                     | GET           | Health check                |
 
 ### WebSocket Hibernation
 

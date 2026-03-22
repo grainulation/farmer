@@ -57,28 +57,40 @@ Tokens are persisted in a JSON token file (`tokens.json` in the data directory).
 
 Farmer exposes four hook endpoints. All accept POST with JSON body, localhost only:
 
-| Endpoint | Purpose |
-|---|---|
-| `/hooks/permission` | Tool permission requests (blocking -- waits for approve/deny) |
-| `/hooks/activity` | Tool completion events (non-blocking) |
-| `/hooks/notification` | Messages, questions, agent events (non-blocking) |
-| `/hooks/lifecycle` | Session start/end events |
-| `/hooks/stop` | Graceful shutdown signal |
+| Endpoint              | Purpose                                                       |
+| --------------------- | ------------------------------------------------------------- |
+| `/hooks/permission`   | Tool permission requests (blocking -- waits for approve/deny) |
+| `/hooks/activity`     | Tool completion events (non-blocking)                         |
+| `/hooks/notification` | Messages, questions, agent events (non-blocking)              |
+| `/hooks/lifecycle`    | Session start/end events                                      |
+| `/hooks/stop`         | Graceful shutdown signal                                      |
 
 ## Writing an adapter
 
 To support a new AI agent, extend `BaseAdapter` in `lib/adapters/base.js`:
 
 ```js
-import { BaseAdapter } from '@grainulation/farmer/lib/adapters/base.js';
+import { BaseAdapter } from "@grainulation/farmer/lib/adapters/base.js";
 
 class MyAgentAdapter extends BaseAdapter {
-  get name() { return 'My Agent'; }
-  parseRequest(body) { /* ... */ }
-  formatResponse(decision, context) { /* ... */ }
-  getToolName(body) { /* ... */ }
-  isQuestion(body) { /* ... */ }
-  parseNotification(body) { /* ... */ }
+  get name() {
+    return "My Agent";
+  }
+  parseRequest(body) {
+    /* ... */
+  }
+  formatResponse(decision, context) {
+    /* ... */
+  }
+  getToolName(body) {
+    /* ... */
+  }
+  isQuestion(body) {
+    /* ... */
+  }
+  parseNotification(body) {
+    /* ... */
+  }
 }
 ```
 
@@ -100,16 +112,16 @@ Farmer has zero npm dependencies. SSE for real-time streaming, polling as fallba
 
 ## Part of the grainulation ecosystem
 
-| Tool | Role |
-|------|------|
-| [wheat](https://github.com/grainulation/wheat) | Research engine -- grow structured evidence |
-| **farmer** | Permission dashboard -- approve AI actions in real time |
-| [barn](https://github.com/grainulation/barn) | Shared tools -- templates, validators, sprint detection |
-| [mill](https://github.com/grainulation/mill) | Format conversion -- export to PDF, CSV, slides, 24 formats |
-| [silo](https://github.com/grainulation/silo) | Knowledge storage -- reusable claim libraries and packs |
-| [harvest](https://github.com/grainulation/harvest) | Analytics -- cross-sprint patterns and prediction scoring |
-| [orchard](https://github.com/grainulation/orchard) | Orchestration -- multi-sprint coordination and dependencies |
-| [grainulation](https://github.com/grainulation/grainulation) | Unified CLI -- single entry point to the ecosystem |
+| Tool                                                         | Role                                                        |
+| ------------------------------------------------------------ | ----------------------------------------------------------- |
+| [wheat](https://github.com/grainulation/wheat)               | Research engine -- grow structured evidence                 |
+| **farmer**                                                   | Permission dashboard -- approve AI actions in real time     |
+| [barn](https://github.com/grainulation/barn)                 | Shared tools -- templates, validators, sprint detection     |
+| [mill](https://github.com/grainulation/mill)                 | Format conversion -- export to PDF, CSV, slides, 24 formats |
+| [silo](https://github.com/grainulation/silo)                 | Knowledge storage -- reusable claim libraries and packs     |
+| [harvest](https://github.com/grainulation/harvest)           | Analytics -- cross-sprint patterns and prediction scoring   |
+| [orchard](https://github.com/grainulation/orchard)           | Orchestration -- multi-sprint coordination and dependencies |
+| [grainulation](https://github.com/grainulation/grainulation) | Unified CLI -- single entry point to the ecosystem          |
 
 ## License
 

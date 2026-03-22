@@ -14,7 +14,7 @@ Derive the grainulation root from `$HOME/repo/grainulation`. Confirm the directo
 
 ### Step 2: Check server binding
 
-For each repo, search server files (*.js, *.mjs, *.ts) for:
+For each repo, search server files (_.js, _.mjs, \*.ts) for:
 
 - `0.0.0.0` -- server binding to all interfaces (P0 if found in production code)
 - `.listen(PORT)` or `.listen(port)` without a host argument -- defaults to 0.0.0.0 in Node (P1)

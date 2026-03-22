@@ -35,6 +35,7 @@ Parses a raw hook POST body into a normalized permission object:
 Converts a decision into the agent-specific HTTP response body.
 
 **decision:**
+
 ```js
 {
   allow: boolean,
@@ -44,6 +45,7 @@ Converts a decision into the agent-specific HTTP response body.
 ```
 
 **context:**
+
 ```js
 {
   hookEvent: string,   // e.g., "PreToolUse"
@@ -90,8 +92,8 @@ See `lib/adapters/claude-code.js` for the reference implementation. Key behavior
 Pass your adapter when creating the server:
 
 ```js
-import { FarmerServer } from '@grainulation/farmer/lib/server.js';
-import { MyAdapter } from './my-adapter.js';
+import { FarmerServer } from "@grainulation/farmer/lib/server.js";
+import { MyAdapter } from "./my-adapter.js";
 
 const server = new FarmerServer({
   port: 9090,

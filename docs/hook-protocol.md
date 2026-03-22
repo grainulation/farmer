@@ -6,11 +6,11 @@ Farmer's hook protocol is agent-agnostic. Each hook endpoint accepts `POST` requ
 
 Every hook payload should include:
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `session_id` | string | No | Unique session identifier. If omitted, Farmer derives one from PID + CWD. |
-| `cwd` | string | No | Working directory of the agent session |
-| `pid` | number | No | Process ID of the agent (used for session binding) |
+| Field        | Type   | Required | Description                                                               |
+| ------------ | ------ | -------- | ------------------------------------------------------------------------- |
+| `session_id` | string | No       | Unique session identifier. If omitted, Farmer derives one from PID + CWD. |
+| `cwd`        | string | No       | Working directory of the agent session                                    |
+| `pid`        | number | No       | Process ID of the agent (used for session binding)                        |
 
 ## POST /hooks/permission
 
@@ -108,18 +108,18 @@ Reports session start/end events.
 
 These endpoints require token authentication (cookie or URL param) and CSRF token for mutations. Role-based access applies: viewer tokens receive 403 on mutating endpoints (decide, trust-level, rules, message, rotate-token, invite generation).
 
-| Method | Path | Description |
-|---|---|---|
-| GET | `/invite` | Validate HMAC signed invite link (`?role=...&exp=...&sig=...`), set auth cookie, redirect to dashboard |
-| GET | `/events` | SSE stream (real-time push) |
-| GET | `/api/state` | Full current state |
-| POST | `/api/decide` | Approve/deny a pending permission |
-| POST | `/api/trust-level` | Set trust level |
-| POST | `/api/rules` | Add/remove auto-approve rules |
-| POST | `/api/message` | Relay a message (localhost only) |
-| GET | `/api/admin/invite` | Generate a signed invite URL (admin-only) |
-| POST | `/api/admin/rotate-token` | Rotate auth token (admin-only) |
-| POST | `/connect` | Connect external tools (admin-only, returns 404 for non-admin) |
+| Method | Path                      | Description                                                                                            |
+| ------ | ------------------------- | ------------------------------------------------------------------------------------------------------ |
+| GET    | `/invite`                 | Validate HMAC signed invite link (`?role=...&exp=...&sig=...`), set auth cookie, redirect to dashboard |
+| GET    | `/events`                 | SSE stream (real-time push)                                                                            |
+| GET    | `/api/state`              | Full current state                                                                                     |
+| POST   | `/api/decide`             | Approve/deny a pending permission                                                                      |
+| POST   | `/api/trust-level`        | Set trust level                                                                                        |
+| POST   | `/api/rules`              | Add/remove auto-approve rules                                                                          |
+| POST   | `/api/message`            | Relay a message (localhost only)                                                                       |
+| GET    | `/api/admin/invite`       | Generate a signed invite URL (admin-only)                                                              |
+| POST   | `/api/admin/rotate-token` | Rotate auth token (admin-only)                                                                         |
+| POST   | `/connect`                | Connect external tools (admin-only, returns 404 for non-admin)                                         |
 
 ## SSE
 

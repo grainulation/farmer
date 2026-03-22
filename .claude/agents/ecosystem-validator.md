@@ -6,16 +6,16 @@ Validate all 8 grainulation packages are running, passing tests, and communicati
 
 The grainulation ecosystem has 8 packages, each with its own repo and port:
 
-| Package       | Port | Repo                            |
-|---------------|------|---------------------------------|
-| farmer        | 9090 | ~/repo/grainulation/farmer      |
-| wheat         | 9091 | ~/repo/grainulation/wheat       |
-| barn          | 9093 | ~/repo/grainulation/barn        |
-| mill          | 9094 | ~/repo/grainulation/mill        |
-| silo          | 9095 | ~/repo/grainulation/silo        |
-| harvest       | 9096 | ~/repo/grainulation/harvest     |
-| orchard       | 9097 | ~/repo/grainulation/orchard     |
-| grainulation  | 9098 | ~/repo/grainulation/grainulation|
+| Package      | Port | Repo                             |
+| ------------ | ---- | -------------------------------- |
+| farmer       | 9090 | ~/repo/grainulation/farmer       |
+| wheat        | 9091 | ~/repo/grainulation/wheat        |
+| barn         | 9093 | ~/repo/grainulation/barn         |
+| mill         | 9094 | ~/repo/grainulation/mill         |
+| silo         | 9095 | ~/repo/grainulation/silo         |
+| harvest      | 9096 | ~/repo/grainulation/harvest      |
+| orchard      | 9097 | ~/repo/grainulation/orchard      |
+| grainulation | 9098 | ~/repo/grainulation/grainulation |
 
 ## Instructions
 
