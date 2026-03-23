@@ -3467,10 +3467,9 @@ function renderRules() {
             ${cat.tools.map(tool => {
               const isActive = activeRuleSet.has(tool);
               return `
-                <label class="rule-check ${isActive ? 'active' : ''}" onclick="toggleRule('${esc(tool)}')">
-                  <input type="checkbox" ${isActive ? 'checked' : ''}>
+                <div class="rule-check ${isActive ? 'active' : ''}" onclick="toggleRule('${esc(tool)}')" role="checkbox" aria-checked="${isActive}" tabindex="0">
                   <span>${isActive ? ICONS.check + ' ' : ''}${esc(tool)}</span>
-                </label>
+                </div>
               `;
             }).join('')}
           </div>
