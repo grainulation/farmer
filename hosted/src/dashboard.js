@@ -164,7 +164,9 @@ body.viewer .perm-actions, body.viewer .trust-select, body.viewer .feedback-box 
 .perm-card .swipe-bg {
   position: absolute; top: 0; bottom: 0; width: 100%; display: flex;
   align-items: center; font-weight: 800; font-size: 18px; padding: 0 24px;
+  pointer-events: none; z-index: 0;
 }
+.perm-card .perm-actions { position: relative; z-index: 1; }
 .perm-card .swipe-bg.approve { left: 0; background: rgba(34,197,94,0.25); color: var(--green); justify-content: flex-start; }
 .perm-card .swipe-bg.deny { right: 0; background: rgba(239,68,68,0.25); color: var(--red); justify-content: flex-end; }
 
