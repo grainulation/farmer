@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/@grainulation/farmer"><img src="https://img.shields.io/npm/v/@grainulation/farmer" alt="npm version"></a> <a href="https://www.npmjs.com/package/@grainulation/farmer"><img src="https://img.shields.io/npm/dm/@grainulation/farmer" alt="npm downloads"></a> <a href="https://github.com/grainulation/farmer/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a> <a href="https://nodejs.org"><img src="https://img.shields.io/node/v/@grainulation/farmer" alt="node"></a> <a href="https://github.com/grainulation/farmer/actions"><img src="https://github.com/grainulation/farmer/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://www.npmjs.com/package/@grainulation/farmer"><img src="https://img.shields.io/npm/v/@grainulation/farmer?label=%40grainulation%2Ffarmer" alt="npm version"></a> <a href="https://www.npmjs.com/package/@grainulation/farmer"><img src="https://img.shields.io/npm/dm/@grainulation/farmer" alt="npm downloads"></a> <a href="https://github.com/grainulation/farmer/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a> <a href="https://nodejs.org"><img src="https://img.shields.io/node/v/@grainulation/farmer" alt="node"></a> <a href="https://github.com/grainulation/farmer/actions"><img src="https://github.com/grainulation/farmer/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://deepwiki.com/grainulation/farmer"><img src="https://deepwiki.com/badge.svg" alt="Explore on DeepWiki"></a>
 </p>
 
