@@ -9,12 +9,12 @@
  *   farmer connect [--global]
  */
 
-// Node version gate — fail fast with a clear message on Node < 18
+// Node version gate — fail fast with a clear message on Node < 20
 {
   const [major] = process.versions.node.split(".").map(Number);
-  if (major < 18) {
+  if (major < 20) {
     console.error(
-      `\n  Error: Node 18+ is required, but you are running ${process.version}.\n` +
+      `\n  Error: Node 20+ is required, but you are running ${process.version}.\n` +
         `  Please upgrade Node.js: https://nodejs.org/\n`,
     );
     process.exit(1);

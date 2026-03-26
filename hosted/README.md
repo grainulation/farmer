@@ -49,7 +49,7 @@ npm install
 Without JWT configured, the URL token acts as a shared secret (anyone with the link has admin access). For production, set up ES256 JWT:
 
 ```bash
-# Generate a key pair (Node.js 18+)
+# Generate a key pair (Node.js 20+)
 node -e "
 import { generateKeyPair } from './src/jwt.js';
 const kp = await generateKeyPair();

@@ -67,7 +67,7 @@ The key architectural principle: **farmer is the reference implementation for th
 
 - Zero dependencies. Use Node built-ins for everything.
 - No transpilation. Ship what you write.
-- ESM imports (`import`/`export`). Node 18+ required.
+- ESM imports (`import`/`export`). Node 20+ required.
 - Keep functions small. If a function needs a scroll, split it.
 - No emojis in code, CLI output, or UI.
 
