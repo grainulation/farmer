@@ -6,6 +6,10 @@ node_modules/
 .farmer-feedback
 .farmer.pid
 .farmer-audit*.jsonl
+
+# Claude Code
+.claude/
+
 # Grainulator runtime files
 .wheat-tips.md
 .wheat-compile.lock
