@@ -39,7 +39,6 @@
     "bin/",
     "lib/",
     "public/",
-    "site/",
     "templates/"
   ],
   "scripts": {
