@@ -94,9 +94,9 @@ Options (start):
   --max-sessions <n>       Max concurrent sessions (default: 50)
   --claims <path>          Path to claims.json (enables Claims tab)
   --compilation <path>     Path to compilation.json (enables sprint status)
-  --tunnel-name <name>     Named cloudflared tunnel (stable URL)
-  --tunnel-hostname <host> Hostname for named tunnel
-  --no-tunnel              Skip cloudflared tunnel auto-start
+  --tunnel                   Enable cloudflared tunnel (off by default)
+  --tunnel-name <name>       Named cloudflared tunnel (stable URL)
+  --tunnel-hostname <host>   Hostname for named tunnel
   --no-open                Don't open browser on start
   --verbose                Enable verbose logging to stderr
 
@@ -108,8 +108,8 @@ Config file:
 Examples:
   farmer start --port 8080
   farmer start --claims ./claims.json --compilation ./compilation.json
-  farmer start --tunnel-name my-tunnel --tunnel-hostname farm.example.com
-  farmer start --no-tunnel --no-open
+  farmer start --tunnel --tunnel-name my-tunnel --tunnel-hostname farm.example.com
+  farmer start --no-open
   farmer stop
   farmer status`);
   process.exit(0);
@@ -165,7 +165,7 @@ switch (command) {
       tunnelName: cfg("tunnel-name", ""),
       tunnelHostname: cfg("tunnel-hostname", ""),
       rateLimit,
-      noTunnel: args.includes("--no-tunnel"),
+      noTunnel: !args.includes("--tunnel"),
       noOpen: args.includes("--no-open"),
     });
     server.start();
