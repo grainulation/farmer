@@ -38,8 +38,7 @@
   "files": [
     "bin/",
     "lib/",
-    "public/",
-    "templates/"
+    "public/"
   ],
   "scripts": {
     "start": "node bin/farmer.js start",
