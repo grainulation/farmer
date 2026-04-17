@@ -1602,6 +1602,26 @@
   .fb-row.open ~ .footer-sessions,
   .footer-bar:has(.fb-row.open) .footer-sessions,
   .footer-bar:has(.fb-row.open) .fb-trigger { display: none; }
+  .fb-session-select {
+    padding: 6px 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 16px;
+    font-size: 12px;
+    font-family: inherit;
+    outline: none;
+    max-width: 110px;
+    flex-shrink: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%2210%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2394a3b8%22 stroke-width=%222%22><polyline points=%226 9 12 15 18 9%22/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    padding-right: 20px;
+  }
+  .fb-session-select:focus { border-color: var(--accent); }
+  .fb-session-select.hidden { display: none; }
   .fb-row input {
     flex: 1;
     padding: 6px 10px;
@@ -1753,6 +1773,7 @@
     <div class="footer-sessions" id="footerSessions"></div>
     <button class="fb-trigger inline-feedback" id="fbTrigger" onclick="openInlineFeedback()">Feedback</button>
     <div class="fb-row inline-feedback" id="fbRow">
+      <select id="fbSessionSelect" class="fb-session-select"></select>
       <input id="fbInput" placeholder="Note to Claude..." onkeydown="if(event.key==='Enter'){sendFooterFeedback();event.preventDefault();}" onblur="setTimeout(closeInlineFeedback,200)">
       <button class="fb-send" onclick="sendFooterFeedback()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></button>
     </div>
@@ -1804,7 +1825,7 @@ function postJSON(url, body) {
 }
 
 let evtSource;
-let state = { pending: [], activity: [], messages: [], claims: null, compilation: null, trustLevel: 'paranoid', sessionRules: [], agents: [], sprints: [], activeSprint: null, sessions: [] };
+let state = { pending: [], activity: [], messages: [], claims: null, compilation: null, sprintStatus: null, trustLevel: 'paranoid', sessionRules: [], agents: [], sprints: [], activeSprint: null, sessions: [] };
 let activeTab = 'permissions';
 let topicFilter = null;
 let openQuickRules = null; // requestId of open quick-rules dropdown
@@ -2131,6 +2152,9 @@ function handleMessage(msg) {
       break;
     case 'compilation':
       state.compilation = msg.data;
+      break;
+    case 'sprint_status':
+      state.sprintStatus = msg.data;
       break;
     case 'sprints_list':
       state.sprints = msg.data || [];
@@ -2867,6 +2891,17 @@ function updateBadge() {
 
 let feedbackPending = false;
 let feedbackSent = null;
+let feedbackTargetSession = null; // null = all sessions
+
+function _feedbackSessionOptions() {
+  const ss = (state.sessions || []).filter(s => s.status !== 'ended');
+  if (ss.length === 0) return '';
+  return `<select id="feedbackSessionSelect" onchange="feedbackTargetSession = this.value || null"
+    style="padding:8px 10px;background:var(--bg,#0a0e1a);border:1px solid var(--border,#334155);color:var(--text,#e2e8f0);border-radius:6px;font-size:12px;font-family:inherit;outline:none;max-width:160px;appearance:none;-webkit-appearance:none;background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2394a3b8%22 stroke-width=%222%22><polyline points=%226 9 12 15 18 9%22/></svg>');background-repeat:no-repeat;background-position:right 8px center;padding-right:24px;">
+    <option value="">${t('All sessions')}</option>
+    ${ss.map(s => `<option value="${esc(s.id)}"${feedbackTargetSession === s.id ? ' selected' : ''}>${esc(s.label || s.id)}</option>`).join('')}
+  </select>`;
+}
 
 function renderFeedbackBox() {
   if (feedbackPending) {
@@ -2875,12 +2910,14 @@ function renderFeedbackBox() {
       ${t('Waiting for Claude to read:')} "${esc(feedbackSent || '')}"
     </div>`;
   }
+  const sessionOpts = _feedbackSessionOptions();
   return `<div style="background:var(--surface,#1e293b);border:1px solid var(--border,#334155);border-radius:10px;padding:12px;margin-bottom:12px;">
     <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--dim,#64748b);margin-bottom:6px;display:flex;align-items:center;gap:5px;">
       <span style="width:5px;height:5px;border-radius:50%;background:var(--green,#34d399);display:inline-block;"></span> ${t('Feedback')}
     </div>
-    <div style="display:flex;gap:8px;">
-      <input id="feedbackInput" placeholder="${t('Send a note to Claude...')}" style="flex:1;padding:8px 10px;background:var(--bg,#0a0e1a);border:1px solid var(--border,#334155);color:var(--text,#e2e8f0);border-radius:6px;font-size:13px;font-family:inherit;outline:none;"
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      ${sessionOpts}
+      <input id="feedbackInput" placeholder="${t('Send a note to Claude...')}" style="flex:1;min-width:120px;padding:8px 10px;background:var(--bg,#0a0e1a);border:1px solid var(--border,#334155);color:var(--text,#e2e8f0);border-radius:6px;font-size:13px;font-family:inherit;outline:none;"
         onkeydown="if(event.key==='Enter'){sendFeedback();event.preventDefault();}">
       <button onclick="sendFeedback()" style="padding:8px 14px;background:var(--accent,#3b82f6);color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;">${t('Send')}</button>
     </div>
@@ -2891,11 +2928,15 @@ async function sendFeedback() {
   const input = document.getElementById('feedbackInput');
   if (!input || !input.value.trim()) return;
   const text = input.value.trim();
+  const sessionSelect = document.getElementById('feedbackSessionSelect');
+  const sessionId = sessionSelect ? (sessionSelect.value || null) : feedbackTargetSession;
   try {
+    const payload = { content: text };
+    if (sessionId) payload.session_id = sessionId;
     const resp = await fetch(`/api/feedback?token=${TOKEN}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
-      body: JSON.stringify({ content: text }),
+      body: JSON.stringify(payload),
     });
     if (resp.ok) { feedbackPending = true; feedbackSent = text; render(); }
   } catch {}
@@ -3284,6 +3325,34 @@ function renderSprintSwitcher() {
     </div>`;
 }
 
+function renderSprintStatusCard() {
+  const ss = state.sprintStatus;
+  if (!ss || !ss.sprint) return '';
+  const s = ss.sprint;
+  const q = (s.question || '').length > 80 ? s.question.slice(0, 77) + '...' : (s.question || '--');
+  const phaseColors = { define: '#94a3b8', research: '#60a5fa', prototype: '#a78bfa', evaluate: '#34d399', brief: '#fbbf24' };
+  const phaseColor = phaseColors[(s.phase || '').toLowerCase()] || 'var(--muted)';
+  const compileColors = { clean: 'var(--green)', blocked: 'var(--red)', warning: 'var(--orange)', unknown: 'var(--dim)' };
+  const compileColor = compileColors[(s.compile_status || '').toLowerCase()] || 'var(--dim)';
+  const age = s.timestamp ? Math.round((Date.now() - s.timestamp) / 1000) : null;
+  const ageLabel = age !== null ? (age < 60 ? age + 's ago' : Math.round(age / 60) + 'm ago') : '';
+  return `
+    <div style="padding:14px 16px;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--glass-border);border-radius:10px;margin-bottom:14px;border-inline-start:3px solid ${phaseColor};">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);">${t('Live Sprint Status')}</span>
+        <span style="font-size:10px;color:var(--dim);">${esc(ageLabel)}</span>
+      </div>
+      <div style="font-size:13px;color:var(--text);margin-bottom:10px;line-height:1.4;">${esc(q)}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+        <span style="font-size:10px;font-weight:600;color:${phaseColor};background:${phaseColor}22;padding:2px 10px;border-radius:99px;text-transform:uppercase;">${esc(s.phase)}</span>
+        <span style="font-size:11px;color:var(--text);">${s.claim_count} ${t('claims')}</span>
+        ${s.conflict_count > 0 ? `<span style="font-size:11px;color:var(--orange);font-weight:600;">${s.conflict_count} ${t('conflicts')}</span>` : ''}
+        <span style="font-size:10px;font-weight:600;color:${compileColor};background:${compileColor}22;padding:2px 8px;border-radius:99px;">${esc(s.compile_status)}</span>
+      </div>
+      ${s.certificate ? `<div style="margin-top:8px;font-size:10px;color:var(--dim);font-family:monospace;word-break:break-all;">cert: ${esc(s.certificate)}</div>` : ''}
+    </div>`;
+}
+
 function renderSprint() {
   if (!state.claims) {
     return `<div class="empty"><div class="icon" style="font-size:14px;">--</div><p>${t('No sprint data')}</p></div>`;
@@ -3302,6 +3371,7 @@ function renderSprint() {
 
   return `
     ${renderSprintSwitcher()}
+    ${renderSprintStatusCard()}
 
     <div class="sprint-meta">
       <h2>${state.activeSprint ? `<span style="color:var(--accent-light)">${esc(state.activeSprint)}</span> · ` : ''}${esc(meta.phase).replace(/^\w/,c=>c.toUpperCase())} ${t('Phase')}</h2>
@@ -3966,10 +4036,27 @@ function updateFooterBar() {
 }
 
 // --- Inline Feedback (footer) ---
+function _updateFooterSessionSelect() {
+  const sel = document.getElementById('fbSessionSelect');
+  if (!sel) return;
+  const ss = (state.sessions || []).filter(s => s.status !== 'ended');
+  if (ss.length === 0) {
+    sel.classList.add('hidden');
+    return;
+  }
+  sel.classList.remove('hidden');
+  const prev = sel.value;
+  sel.innerHTML = `<option value="">All</option>` +
+    ss.map(s => `<option value="${esc(s.id)}">${esc(s.label || s.id)}</option>`).join('');
+  // Preserve previous selection if still valid
+  if (prev && ss.some(s => s.id === prev)) sel.value = prev;
+}
+
 function openInlineFeedback() {
   document.getElementById('fbTrigger').style.display = 'none';
   document.getElementById('fbRow').classList.add('open');
   document.getElementById('fbSent').classList.remove('visible');
+  _updateFooterSessionSelect();
   const input = document.getElementById('fbInput');
   input.value = '';
   setTimeout(() => input.focus(), 50);
@@ -3984,12 +4071,16 @@ async function sendFooterFeedback() {
   const input = document.getElementById('fbInput');
   if (!input || !input.value.trim()) return;
   const text = input.value.trim();
+  const sel = document.getElementById('fbSessionSelect');
+  const sessionId = sel && sel.value ? sel.value : null;
   input.blur();
   try {
+    const payload = { content: text };
+    if (sessionId) payload.session_id = sessionId;
     const resp = await fetch(`/api/feedback?token=${TOKEN}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
-      body: JSON.stringify({ content: text }),
+      body: JSON.stringify(payload),
     });
     if (resp.ok) {
       document.getElementById('fbRow').classList.remove('open');
