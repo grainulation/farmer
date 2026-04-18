@@ -5847,7 +5847,9 @@
       }
 
       function closeInlineFeedback() {
-        document.getElementById("fbRow").classList.remove("open");
+        const row = document.getElementById("fbRow");
+        if (row && row.contains(document.activeElement)) return;
+        row.classList.remove("open");
         document.getElementById("fbTrigger").style.display = "";
       }
 
