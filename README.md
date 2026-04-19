@@ -40,7 +40,7 @@ farmer start
 - **Multi-user roles** -- admin and viewer tokens with separate permissions; viewers see read-only cards with "Waiting for admin" labels, admin controls hidden
 - **Trust tiers** -- paranoid (approve everything, overrides session-level rules), standard (auto-approve reads), autonomous (auto-approve most)
 - **AskUserQuestion** -- deny-to-respond pattern lets you answer agent questions from the dashboard
-- **Security** -- two-token auth (admin + viewer), HMAC-signed invite links with expiry, CSRF protection, CSP headers, audit logging
+- **Security** -- three-token auth (admin + viewer + hook), HMAC-signed invite links with expiry, CSRF protection, CSP headers, opportunistic Bearer auth on `/hooks/*` (see below), audit logging
 - **Data persistence** -- activity and messages survive server restarts
 - **Stale server guard** -- auto-approves when no dashboard is connected (prevents CLI blocking)
 
@@ -52,19 +52,37 @@ farmer stop
 farmer status
 ```
 
-Tokens are persisted in a JSON token file (`tokens.json` in the data directory). The file stores admin and viewer tokens and is backwards compatible with the legacy plain-text format.
+Tokens are persisted in a JSON token file (`.farmer-token` in the data directory). The file stores three tokens:
+
+- `admin` -- full dashboard access
+- `viewer` -- read-only dashboard access
+- `hook` -- narrow-scope token for `/hooks/*` Bearer auth; never grants dashboard access
+
+The file is generated automatically on first startup (mode `0600`) and is backwards compatible with the legacy plain-text format. When upgrading from a pre-bs-19 farmer, a fresh `hook` token is generated and appended on first boot.
 
 ## Hook protocol
 
-Farmer exposes four hook endpoints. All accept POST with JSON body, localhost only:
+Farmer exposes the following hook endpoints. All accept POST with JSON body, localhost only:
 
-| Endpoint              | Purpose                                                       |
-| --------------------- | ------------------------------------------------------------- |
-| `/hooks/permission`   | Tool permission requests (blocking -- waits for approve/deny) |
-| `/hooks/activity`     | Tool completion events (non-blocking)                         |
-| `/hooks/notification` | Messages, questions, agent events (non-blocking)              |
-| `/hooks/lifecycle`    | Session start/end events                                      |
-| `/hooks/stop`         | Graceful shutdown signal                                      |
+| Endpoint               | Purpose                                                       |
+| ---------------------- | ------------------------------------------------------------- |
+| `/hooks/permission`    | Tool permission requests (blocking -- waits for approve/deny) |
+| `/hooks/activity`      | Tool completion events (non-blocking)                         |
+| `/hooks/notification`  | Messages, questions, agent events (non-blocking)              |
+| `/hooks/lifecycle`     | Session start/end events                                      |
+| `/hooks/stop`          | Graceful shutdown signal                                      |
+| `/hooks/sprint-status` | Sprint state push from grainulator notifier                   |
+| `/hooks/harvest`       | Harvest analytics events                                      |
+
+### Hook authentication (opportunistic Bearer)
+
+On a shared host (Citrix / multi-user Linux), anything on `127.0.0.1` is reachable by other local users. Without auth, any local process could forge sprint-status POSTs and pollute another user's dashboard. Farmer uses an **opportunistic Bearer auth** scheme to fix this without breaking pre-upgrade users:
+
+- If `.farmer-token` contains a `hook` field at server start, every `/hooks/*` POST MUST include `Authorization: Bearer <hookToken>`. Missing or wrong token => `401 {"error":"unauthorized"}`.
+- If the `hook` field is absent (pre-bs-19 file format), farmer logs a one-time stderr warning (`hook auth disabled — create .farmer-token to enable ...`) and accepts loopback POSTs for backward compat.
+- The admin/viewer tokens are intentionally NOT accepted here; a leaked admin token cannot be used to spam `/hooks/*`, and a leaked hook token cannot log into the dashboard.
+
+Local hook scripts (e.g. grainulator's `sprint-status-notifier.cjs`) read the `hook` token from the farmer data dir (`FARMER_DATA_DIR` env var or `~/.farmer`) and attach the Bearer header automatically. Override with the `FARMER_TOKEN` env var for tests or CI.
 
 ## Writing an adapter
 

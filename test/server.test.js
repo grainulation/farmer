@@ -370,6 +370,163 @@ describe("Farmer rate limiting (smoke)", () => {
   });
 });
 
+describe("Farmer /hooks/* opportunistic Bearer auth (bs-19)", () => {
+  // Shared-host risk: without auth, any local process can forge sprint-status
+  // POSTs and pollute another user's dashboard. These tests pin the three
+  // modes of the bs-19 opportunistic-auth design:
+  //   1. No token file at startup  => loopback POSTs accepted (+ stderr warn).
+  //   2. Token file present        => Bearer header MUST match => 200.
+  //   3. Token file present        => wrong / missing header => 401.
+
+  const HOOK_TOKEN = "test-hook-token-aaaaaaaaaaaaaaaaaaaa";
+  const SPRINT_STATUS_BODY = JSON.stringify({
+    session_id: "test-session-bs19",
+    sprint: {
+      question: "bs-19 auth smoke",
+      claim_count: 1,
+      phase: "research",
+      conflict_count: 0,
+      compile_status: "green",
+      timestamp: Date.now(),
+    },
+  });
+
+  describe("no token on disk (pre-upgrade / first run)", () => {
+    let dataDir;
+    let port;
+    let farmer;
+
+    before(async () => {
+      dataDir = makeDataDir();
+      port = allocPort();
+      // Note: startFarmer passes --token which will seed the admin token,
+      // but the hook field stays absent in the persisted file for this run
+      // because we pre-write a hook-less file BEFORE boot.
+      writeFileSync(
+        join(dataDir, ".farmer-token"),
+        JSON.stringify({ admin: ADMIN_TOKEN, viewer: "v".repeat(32) }),
+      );
+      farmer = await startFarmer({ port, dataDir });
+    });
+
+    after(async () => {
+      if (farmer?.child && farmer.child.exitCode === null) {
+        await stopFarmer(farmer.child);
+      }
+      cleanupDataDir(dataDir);
+    });
+
+    it("POST /hooks/sprint-status without header succeeds (backward compat)", async () => {
+      const res = await httpReq(port, {
+        method: "POST",
+        path: "/hooks/sprint-status",
+        headers: { "content-type": "application/json" },
+        body: SPRINT_STATUS_BODY,
+      });
+      assert.equal(
+        res.status,
+        200,
+        "pre-upgrade loopback POST should be accepted",
+      );
+    });
+
+    it("emits a one-time stderr warning about hook auth being disabled", async () => {
+      // The warning should have been written on the first hook POST above.
+      const stderr = farmer.stderr();
+      assert.match(
+        stderr,
+        /hook auth disabled/i,
+        "expected stderr warning when .farmer-token has no hook field",
+      );
+    });
+  });
+
+  describe("hook token on disk (enforcement mode)", () => {
+    let dataDir;
+    let port;
+    let farmer;
+
+    before(async () => {
+      dataDir = makeDataDir();
+      port = allocPort();
+      // Pre-seed a .farmer-token that already contains the hook field — this
+      // flips farmer into enforcement mode on startup.
+      writeFileSync(
+        join(dataDir, ".farmer-token"),
+        JSON.stringify({
+          admin: ADMIN_TOKEN,
+          viewer: "v".repeat(32),
+          hook: HOOK_TOKEN,
+        }),
+      );
+      farmer = await startFarmer({ port, dataDir });
+    });
+
+    after(async () => {
+      if (farmer?.child && farmer.child.exitCode === null) {
+        await stopFarmer(farmer.child);
+      }
+      cleanupDataDir(dataDir);
+    });
+
+    it("rejects POST without Authorization header with 401 JSON", async () => {
+      const res = await httpReq(port, {
+        method: "POST",
+        path: "/hooks/sprint-status",
+        headers: { "content-type": "application/json" },
+        body: SPRINT_STATUS_BODY,
+      });
+      assert.equal(res.status, 401);
+      assert.match(res.headers["content-type"] || "", /application\/json/);
+      const body = JSON.parse(res.body);
+      assert.equal(body.error, "unauthorized");
+    });
+
+    it("rejects POST with wrong Bearer token with 401", async () => {
+      const res = await httpReq(port, {
+        method: "POST",
+        path: "/hooks/sprint-status",
+        headers: {
+          "content-type": "application/json",
+          authorization: "Bearer totally-wrong-token-12345",
+        },
+        body: SPRINT_STATUS_BODY,
+      });
+      assert.equal(res.status, 401);
+      const body = JSON.parse(res.body);
+      assert.equal(body.error, "unauthorized");
+    });
+
+    it("rejects POST carrying the ADMIN token (admin is not a hook token)", async () => {
+      // Narrow-scope invariant: admin/viewer tokens must NOT grant hook
+      // access. A leaked admin token shouldn't let someone spam /hooks/*.
+      const res = await httpReq(port, {
+        method: "POST",
+        path: "/hooks/sprint-status",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Bearer ${ADMIN_TOKEN}`,
+        },
+        body: SPRINT_STATUS_BODY,
+      });
+      assert.equal(res.status, 401);
+    });
+
+    it("accepts POST with correct hook Bearer token with 200", async () => {
+      const res = await httpReq(port, {
+        method: "POST",
+        path: "/hooks/sprint-status",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Bearer ${HOOK_TOKEN}`,
+        },
+        body: SPRINT_STATUS_BODY,
+      });
+      assert.equal(res.status, 200);
+    });
+  });
+});
+
 describe("Farmer graceful shutdown (smoke)", () => {
   let dataDir;
   let port;

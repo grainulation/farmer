@@ -84,29 +84,75 @@ describe("TokenManager", () => {
     tm.destroy();
   });
 
-  it("toJSON serializes both tokens", () => {
-    const tm = new TokenManager({ token: "adm", viewerToken: "view" });
+  it("toJSON serializes all three tokens (admin + viewer + hook)", () => {
+    const tm = new TokenManager({
+      token: "adm",
+      viewerToken: "view",
+      hookToken: "hk",
+    });
     const json = tm.toJSON();
-    assert.deepEqual(json, { admin: "adm", viewer: "view" });
+    assert.deepEqual(json, { admin: "adm", viewer: "view", hook: "hk" });
     tm.destroy();
   });
 
-  it("parseTokenFile handles JSON format", () => {
+  it("auto-generates a hook token when none is provided", () => {
+    const tm = new TokenManager({ token: "adm", viewerToken: "view" });
+    assert.ok(tm.hookToken, "hookToken should be generated");
+    assert.notEqual(
+      tm.hookToken,
+      tm.token,
+      "hook token must differ from admin",
+    );
+    assert.notEqual(
+      tm.hookToken,
+      tm.viewerToken,
+      "hook token must differ from viewer",
+    );
+    tm.destroy();
+  });
+
+  it("matchesHook is scoped — admin/viewer tokens do NOT satisfy it", () => {
+    const tm = new TokenManager({
+      token: "adm",
+      viewerToken: "view",
+      hookToken: "hk",
+    });
+    assert.equal(tm.matchesHook("hk"), true);
+    assert.equal(tm.matchesHook("adm"), false);
+    assert.equal(tm.matchesHook("view"), false);
+    assert.equal(tm.matchesHook(""), false);
+    assert.equal(tm.matchesHook(null), false);
+    tm.destroy();
+  });
+
+  it("parseTokenFile handles JSON format (now parses hook field)", () => {
+    const result = TokenManager.parseTokenFile(
+      '{"admin":"a1","viewer":"v1","hook":"h1"}',
+    );
+    assert.equal(result.admin, "a1");
+    assert.equal(result.viewer, "v1");
+    assert.equal(result.hook, "h1");
+  });
+
+  it("parseTokenFile handles JSON without hook field (pre-bs-19 format)", () => {
     const result = TokenManager.parseTokenFile('{"admin":"a1","viewer":"v1"}');
     assert.equal(result.admin, "a1");
     assert.equal(result.viewer, "v1");
+    assert.equal(result.hook, "", "missing hook field should parse as empty");
   });
 
   it("parseTokenFile handles plain text (backwards compat)", () => {
     const result = TokenManager.parseTokenFile("oldplaintoken");
     assert.equal(result.admin, "oldplaintoken");
     assert.equal(result.viewer, "");
+    assert.equal(result.hook, "");
   });
 
   it("parseTokenFile handles empty input", () => {
     const result = TokenManager.parseTokenFile("");
     assert.equal(result.admin, "");
     assert.equal(result.viewer, "");
+    assert.equal(result.hook, "");
   });
 
   it("signInvite and verifyInvite round-trip", () => {
