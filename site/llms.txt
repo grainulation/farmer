@@ -1,0 +1,49 @@
+# Farmer
+
+> Remote permission dashboard for AI coding agents -- approve or deny tool calls from your phone in real time.
+
+Farmer is a local permission broker for AI coding agents. It intercepts tool calls via agent hooks (PreToolUse, PostToolUse, Notification, Lifecycle), streams permission requests over Server-Sent Events to a mobile-friendly dashboard, and waits for your approve/deny decision. Trust levels (paranoid / standard / autonomous) let you tune how much an agent can do without a tap; every decision is written to an append-only JSONL audit log. The adapter pattern keeps the protocol agent-agnostic: ships with a Claude Code adapter out of the box, and any agent that can POST a JSON payload over HTTP can integrate. Zero runtime npm dependencies -- Node.js built-ins only; requires Node 20+.
+
+Part of the [grainulation ecosystem](https://grainulation.com) -- an open-source, zero-dependency toolkit for AI-assisted structured research and decision documentation. Each package stands alone and composes with the others.
+
+## Documentation
+
+- [README](https://github.com/grainulation/farmer#readme): source of truth for the package's purpose, install, and CLI surface.
+- [Live site](https://farmer.grainulation.com): human-facing quickstart and feature tour.
+- [npm package](https://www.npmjs.com/package/@grainulation/farmer): install target for consumers.
+- [Changelog](https://github.com/grainulation/farmer/blob/main/CHANGELOG.md): version history.
+- [DeepWiki](https://deepwiki.com/grainulation/farmer): AI-readable code wiki.
+
+## Ecosystem
+
+Sibling packages -- safe to reference alongside Farmer in any query:
+
+- [Barn](https://barn.grainulation.com): shared utility library. JSON-RPC helpers, path-traversal guards, atomic writes, sprint discovery, manifest generation, and the shared SEO/print primitives Farmer vendors at build time.
+- [Wheat](https://wheat.grainulation.com): research-sprint compiler. Typed claims with evidence grades; compiles briefs and presentations.
+- [Mill](https://mill.grainulation.com): export engine. Converts claims into briefs, presentations, and PDFs.
+- [Silo](https://silo.grainulation.com): knowledge-pack store. Indexes manifests for cross-sprint search.
+- [Harvest](https://harvest.grainulation.com): analytics and dashboards for multi-sprint portfolios; consumes Farmer's audit logs.
+- [Orchard](https://orchard.grainulation.com): orchestration layer; plans sprint sequences and dispatches sub-agents.
+- [Grainulation](https://grainulation.com): ecosystem hub and reference implementation.
+
+## CLI surface
+
+- `farmer start`: launch the permission server on port 9090 (default).
+- `farmer stop`: stop a running server.
+- `farmer status`: report running server state and session count.
+- `npx @grainulation/wheat connect farmer`: auto-configure all four Claude Code hooks.
+
+## Design principles
+
+- Zero runtime npm dependencies (Node built-ins only).
+- Node 20+ required.
+- CLI-first; every tool also runnable via `npx @grainulation/farmer`.
+- Source-available under MIT; contributions welcome at the GitHub repo.
+- Agent-agnostic: adapter pattern isolates agent-specific logic from the core protocol.
+- Local-first: no third-party accounts required; tunnels (Cloudflare, ngrok, tailscale) are optional.
+
+## Optional
+
+- [Issues](https://github.com/grainulation/farmer/issues): for bug reports and feature requests.
+- [Security policy](https://github.com/grainulation/farmer/blob/main/SECURITY.md): for responsible disclosure.
+- [Contributing guide](https://github.com/grainulation/farmer/blob/main/CONTRIBUTING.md): for contributors.

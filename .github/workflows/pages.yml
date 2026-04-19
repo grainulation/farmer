@@ -1,12 +1,21 @@
 # .github/workflows/pages.yml — Deploy site/ to GitHub Pages
 # Copy this file to each repo's .github/workflows/ directory
+#
+# NOTE: The "Vendor shared assets" step invokes @grainulation/barn's
+# sync-assets CLI to copy shared SEO/print primitives (grainulation-print.css,
+# grainulation-tokens.css, status-icons.svg) into site/ BEFORE upload, so CSP
+# `default-src 'self'` stays strict.
 
 name: Deploy to GitHub Pages
 
 on:
   push:
     branches: [main]
-    paths: ["site/**"]
+    paths:
+      - "site/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/pages.yml"
   workflow_dispatch:
 
 permissions:
@@ -26,6 +35,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps (for sync-assets)
+        run: npm ci
+
+      - name: Vendor shared assets (sync-assets)
+        run: node node_modules/@grainulation/barn/tools/sync-assets.js --target ./site --verbose
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
