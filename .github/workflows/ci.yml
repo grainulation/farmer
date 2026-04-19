@@ -24,19 +24,19 @@ jobs:
       - name: Format check
         run: npm run format:check
       - run: npm install
-      - name: Verify zero dependencies
+      - name: Verify zero third-party dependencies
         run: |
-          node -e "
-            const pkg = require('./package.json');
-            const deps = pkg.dependencies ? Object.keys(pkg.dependencies) : [];
-            // farmer allows 'ws' as sole dependency
-            const unexpected = deps.filter(d => d !== 'ws');
-            if (unexpected.length > 0) {
-              console.error('farmer: unexpected dependencies:', unexpected);
-              process.exit(1);
-            }
-            console.log('Dependencies verified (ws only)');
-          "
+          # Internal @grainulation/* deps are allowed; any other dep fails.
+          foreign=$(node -e "
+            const d = require('./package.json').dependencies || {};
+            const bad = Object.keys(d).filter(n => !n.startsWith('@grainulation/') && n !== 'ws');
+            console.log(bad.join(','));
+          ")
+          if [ -n "$foreign" ]; then
+            echo "ERROR: package.json has third-party dependencies: $foreign"
+            echo "Only @grainulation/* internal deps are permitted."
+            exit 1
+          fi
       - name: Run tests
         run: npm test
       - name: CLI help check
