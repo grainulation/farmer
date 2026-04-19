@@ -21,6 +21,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+      - name: Format check
+        run: npm run format:check
       - run: npm install
       - name: Verify zero dependencies
         run: |

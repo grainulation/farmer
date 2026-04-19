@@ -44,7 +44,9 @@
     "start": "node bin/farmer.js start",
     "stop": "node bin/farmer.js stop",
     "status": "node bin/farmer.js status",
-    "test": "node --test test/adapters.test.js test/persistence.test.js test/security.test.js"
+    "test": "node --test test/adapters.test.js test/persistence.test.js test/security.test.js",
+    "format": "npx prettier@3.3 --write .",
+    "format:check": "npx prettier@3.3 --check ."
   },
   "dependencies": {
     "@grainulation/barn": "^1.2.0"
