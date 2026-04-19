@@ -27,12 +27,11 @@ import { FarmerServer } from "../lib/server.js";
 import { PidLock } from "../lib/security.js";
 import { connect, hasGlobalHooks, hasProjectHooks } from "../lib/connect.js";
 
+import { setVerbose, vlog as barnVlog } from "@grainulation/barn/cli";
+
 const verbose = process.argv.includes("--verbose");
-function vlog(...a) {
-  if (!verbose) return;
-  const ts = new Date().toISOString();
-  process.stderr.write(`[${ts}] farmer: ${a.join(" ")}\n`);
-}
+setVerbose(verbose);
+const vlog = (...a) => barnVlog("farmer:", ...a);
 export { vlog, verbose };
 
 const args = process.argv.slice(2);
