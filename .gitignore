@@ -15,3 +15,8 @@ node_modules/
 .wheat-compile.lock
 
 package-lock.json
+
+# Environment / secrets — never commit
+.env
+.env.local
+.env.*.local

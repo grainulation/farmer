@@ -107,9 +107,9 @@ lib/security.js        Token auth, CSRF, CSP, PID lock, audit log
 public/index.html      Dashboard (inline JS, no build step)
 ```
 
-## Zero dependencies
+## Zero third-party dependencies
 
-Farmer has zero npm dependencies. SSE for real-time streaming, polling as fallback. Everything is Node built-ins.
+Farmer has zero third-party runtime dependencies — depends only on `@grainulation/barn` (internal ecosystem utilities). SSE for real-time streaming, polling as fallback. Everything else is Node built-ins.
 
 ## Part of the grainulation ecosystem
 
