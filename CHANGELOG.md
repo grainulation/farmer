@@ -1,5 +1,99 @@
 # Changelog
 
+## 1.1.3 -- 2026-04-18
+
+### Added
+
+- Session-aware feedback consumption and defensive type coercion so feedback scoping doesn't leak across sessions
+
+### Changed
+
+- Refactored farmer CLI to use `@grainulation/barn/cli` vlog
+
+### Fixed
+
+- Feedback dropdown no longer collapses the popover when selected
+
+### Docs
+
+- Added SECURITY.md
+- README honesty pass (production polish), added `publishConfig`, expanded `.gitignore` to cover `.env`
+
+## 1.1.2 -- 2026-04-11
+
+### Added
+
+- Sprint-status endpoint plus session-targeted feedback (allows directing feedback to a specific session)
+
+### Fixed
+
+- DeepWiki docs link (was broken)
+- Wheat chip label shortened from "evidence compiler" to "compiler"
+- Updated wheat ecosystem chip and added tagline to footer
+
+### Changed
+
+- Concrete zero-dep messaging in landing copy; softened Cloudflare reference
+
+### Removed
+
+- Unused imports and dead code flagged by eslint audit
+- `publish.yml` workflow — publishing is now manual (token-create-publish-delete)
+
+### Internal
+
+- Trimmed npm tarball — removed local-only files and `site/` (deployed separately via GitHub Pages)
+- CI skips publish when the version already exists on npm
+
+## 1.1.0 -- 2026-04-11
+
+Security hardening release.
+
+### Security
+
+- CSP meta tag added (Rx-6)
+- Farmer tunnel flipped to opt-in by default (Rx-9)
+
+### Internal
+
+- Missing runtime files added to `.gitignore` (Rx-10)
+
+## 1.0.7 -- 2026-04-09
+
+### Security
+
+- Bearer token auth added to hook endpoints (P0 blind-spot fix)
+- `.farmer-token` and runtime files added to `.gitignore` (Rx-003)
+
+### Fixed
+
+- Node 18 → 20 across landing page, `bin`, CI matrix, and docs
+
+### Docs
+
+- npm badge now shows the full scoped package name
+
+## 1.0.6 -- 2026-03-23
+
+### Fixed
+
+- Session-rule toggle — label + checkbox double-click bug caused unintended re-toggles
+
+## 1.0.5 -- 2026-03-22
+
+### Added
+
+- Hosted farmer on Cloudflare Workers + Durable Objects (optional hosted variant)
+
+### Changed
+
+- Aligned `engines.node` to `>=20`; LICENSE copyright to "grainulation contributors"
+- DeepWiki badge, static license badge, and `type: module` consistency pass
+
+### Fixed
+
+- Approve/deny buttons were unclickable because the swipe overlay was blocking clicks
+
 ## 1.0.4 -- 2026-03-20
 
 Connect command and permission state reliability.
