@@ -1,0 +1,30 @@
+{
+  "repo_notes": [
+    {
+      "content": "Farmer is the permission dashboard for AI coding agents. It sits between an AI agent and the terminal, presenting tool-call approval requests on a visual dashboard (desktop and mobile) so the operator can approve, deny, or respond in real time. Farmer integrates with Claude Code and the broader grainulation ecosystem — it reads wheat sprint state so the operator sees which sprint the agent is working in when a tool call is proposed.",
+      "author": "grainulation-core"
+    },
+    {
+      "content": "When documenting farmer, emphasize: (1) it is a human-in-the-loop gate for agentic coding, not a sandbox or a policy engine, (2) the mobile-first approval UX is a differentiator (approvals from phone), (3) it relies on barn for sprint detection to enrich the approval context, (4) it is NOT a Telegram bot or chat-app integration — it has a native dashboard UI.",
+      "author": "grainulation-core"
+    }
+  ],
+  "pages": [
+    {
+      "title": "Quick start",
+      "purpose": "Install via npx @grainulation/farmer, start the dashboard, the 30-second pitch on human-in-the-loop tool-call approval, pairing with Claude Code."
+    },
+    {
+      "title": "Core concepts",
+      "purpose": "Tool-call approval flow, approval states (pending/approved/denied/responded), audit log (.farmer-audit.jsonl), desktop vs mobile dashboard, sprint-aware context injection, persistent session state."
+    },
+    {
+      "title": "API reference",
+      "purpose": "CLI commands (bin/farmer.js), dashboard HTTP endpoints, approval protocol (how an agent requests approval, how farmer responds), audit log format, environment variables, config file."
+    },
+    {
+      "title": "Ecosystem integration",
+      "purpose": "How farmer relates to barn (reads barn sprint detection to show which sprint an approval belongs to), wheat (farmer shows wheat sprint state on the approval card), mill and others (farmer approves tool calls issued by any grainulation CLI). Farmer is the operator-facing runtime companion."
+    }
+  ]
+}
