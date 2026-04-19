@@ -14,8 +14,6 @@ node_modules/
 .wheat-tips.md
 .wheat-compile.lock
 
-package-lock.json
-
 # Environment / secrets — never commit
 .env
 .env.local
