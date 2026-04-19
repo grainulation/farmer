@@ -124,6 +124,10 @@ Farmer has zero third-party runtime dependencies — depends only on `@grainulat
 | [orchard](https://github.com/grainulation/orchard)           | Orchestration -- multi-sprint coordination and dependencies |
 | [grainulation](https://github.com/grainulation/grainulation) | Unified CLI -- single entry point to the ecosystem          |
 
+## Releases
+
+See [CHANGELOG.md](./CHANGELOG.md) for release history.
+
 ## License
 
 MIT
