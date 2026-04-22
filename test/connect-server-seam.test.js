@@ -432,6 +432,217 @@ describe("red-team regressions (rt001-rt008)", () => {
   });
 });
 
+// ---------- E2E feedback workflow (rt-fb1 / rt-fb2 / rt-fb3) ----------
+//
+// Walks the full mobile-feedback-submit -> Claude-poll -> Claude-ack path
+// and verifies per-session semantics hold end-to-end. Previously missed
+// by the attack-surface red team: the workflow semantics themselves had
+// holes (default session fallback, ack-all, untargeted poll fallback)
+// that let feedback cross between sessions on the same host.
+
+describe("feedback workflow is session-scoped end-to-end", () => {
+  let dataDir, port, farmer, sessionA, sessionB, hookToken;
+
+  before(async () => {
+    dataDir = mkDataDir();
+    port = allocPort();
+    hookToken = "h".repeat(32);
+    const adminToken = "a".repeat(32);
+    writeFileSync(
+      join(dataDir, ".farmer-token"),
+      JSON.stringify({
+        admin: adminToken,
+        viewer: "v".repeat(32),
+        hook: hookToken,
+      }),
+      { mode: 0o600 },
+    );
+    farmer = await startFarmer(port, dataDir);
+    sessionA = "feedback-session-A-" + Date.now();
+    sessionB = "feedback-session-B-" + Date.now();
+
+    // Register two distinct sessions by firing a PostToolUse hook for each
+    for (const sid of [sessionA, sessionB]) {
+      const body = JSON.stringify({
+        session_id: sid,
+        cwd: dataDir,
+        tool_name: "Bash",
+        hook_event_name: "PostToolUse",
+      });
+      await new Promise((resolve, reject) => {
+        const req = nodeHttpRequest(
+          {
+            host: "127.0.0.1",
+            port,
+            path: "/hooks/activity",
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Content-Length": Buffer.byteLength(body),
+              Authorization: "Bearer " + hookToken,
+            },
+          },
+          (r) => {
+            r.resume();
+            r.on("end", resolve);
+          },
+        );
+        req.on("error", reject);
+        req.write(body);
+        req.end();
+      });
+    }
+    await sleep(100);
+  });
+
+  after(async () => {
+    if (farmer?.child && farmer.child.exitCode === null) {
+      await stopFarmer(farmer.child);
+    }
+    rmDataDir(dataDir);
+  });
+
+  const req = (path, method, body, headers = {}) =>
+    new Promise((resolve, reject) => {
+      const opts = {
+        host: "127.0.0.1",
+        port,
+        path,
+        method,
+        headers: { ...headers },
+        timeout: 3000,
+      };
+      if (body) {
+        opts.headers["Content-Length"] = Buffer.byteLength(body);
+        if (!opts.headers["Content-Type"])
+          opts.headers["Content-Type"] = "application/json";
+      }
+      const r = nodeHttpRequest(opts, (resp) => {
+        const chunks = [];
+        resp.on("data", (c) => chunks.push(c));
+        resp.on("end", () =>
+          resolve({
+            status: resp.statusCode,
+            body: Buffer.concat(chunks).toString("utf8"),
+          }),
+        );
+      });
+      r.on("error", reject);
+      if (body) r.write(body);
+      r.end();
+    });
+
+  it("rt-fb1: submit without session_id is rejected 400", async () => {
+    const r = await req(
+      "/api/feedback",
+      "POST",
+      JSON.stringify({ content: "hello" }),
+      { Authorization: "Bearer " + "a".repeat(32) },
+    );
+    assert.equal(r.status, 400);
+    assert.match(r.body, /session_id_required/);
+  });
+
+  it("rt-fb1: submit to session A, poll from session B returns empty", async () => {
+    const submit = await req(
+      "/api/feedback",
+      "POST",
+      JSON.stringify({ content: "for A only", session_id: sessionA }),
+      { Authorization: "Bearer " + "a".repeat(32) },
+    );
+    assert.equal(submit.status, 200, `submit: ${submit.body}`);
+
+    const pollB = await req(
+      `/api/feedback/poll?session_id=${encodeURIComponent(sessionB)}`,
+      "GET",
+      null,
+      { Authorization: "Bearer " + hookToken },
+    );
+    assert.equal(pollB.status, 200);
+    const itemsB = JSON.parse(pollB.body).items;
+    assert.equal(
+      itemsB.length,
+      0,
+      `rt-fb1 regression — session B received session A's feedback: ${pollB.body}`,
+    );
+
+    const pollA = await req(
+      `/api/feedback/poll?session_id=${encodeURIComponent(sessionA)}`,
+      "GET",
+      null,
+      { Authorization: "Bearer " + hookToken },
+    );
+    const itemsA = JSON.parse(pollA.body).items;
+    assert.ok(
+      itemsA.length >= 1,
+      `session A should see its own feedback: ${pollA.body}`,
+    );
+    assert.ok(itemsA.some((i) => i.text.includes("for A only")));
+  });
+
+  it("rt-fb2: poll without hook token is rejected 401 in enforced mode", async () => {
+    const r = await req(
+      `/api/feedback/poll?session_id=${encodeURIComponent(sessionA)}`,
+      "GET",
+    );
+    assert.equal(r.status, 401, `poll must require Bearer: ${r.body}`);
+  });
+
+  it("rt-fb1: ack from wrong session does not mark items delivered", async () => {
+    // Submit a new item for A
+    const submit = await req(
+      "/api/feedback",
+      "POST",
+      JSON.stringify({ content: "ack test", session_id: sessionA }),
+      { Authorization: "Bearer " + "a".repeat(32) },
+    );
+    const submitted = JSON.parse(submit.body);
+
+    // Try to ack it FROM session B
+    const wrongAck = await req(
+      "/api/feedback/ack",
+      "POST",
+      JSON.stringify({ session_id: sessionB, ids: [submitted.id] }),
+      { Authorization: "Bearer " + hookToken },
+    );
+    assert.equal(wrongAck.status, 200);
+    assert.equal(
+      JSON.parse(wrongAck.body).acked,
+      0,
+      "rt-fb1 regression — session B acked session A's feedback",
+    );
+
+    // Verify the item is still pending: poll as A returns it
+    const poll = await req(
+      `/api/feedback/poll?session_id=${encodeURIComponent(sessionA)}`,
+      "GET",
+      null,
+      { Authorization: "Bearer " + hookToken },
+    );
+    const items = JSON.parse(poll.body).items;
+    assert.ok(
+      items.some((i) => i.id === submitted.id),
+      "item should still be pending after wrong-session ack",
+    );
+
+    // Correct-session ack works
+    const rightAck = await req(
+      "/api/feedback/ack",
+      "POST",
+      JSON.stringify({ session_id: sessionA, ids: [submitted.id] }),
+      { Authorization: "Bearer " + hookToken },
+    );
+    assert.equal(rightAck.status, 200);
+    assert.equal(JSON.parse(rightAck.body).acked, 1);
+  });
+
+  it("rt-fb3: legacy /api/feedback/read is 410 Gone", async () => {
+    const r = await req("/api/feedback/read", "POST", "");
+    assert.equal(r.status, 410);
+    assert.match(r.body, /endpoint_removed|\/api\/feedback\/ack/);
+  });
+});
+
 // ---------- Test 2: silent-401 class is surfaced ----------
 
 describe("silent-401 visibility: server records rejections users can see", () => {

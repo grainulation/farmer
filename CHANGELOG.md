@@ -15,6 +15,14 @@ Pre-publish red-team pass caught 5 P0 and 3 P1 vulnerabilities in the first cut 
 - **rt007 — `.farmer-broken-installs.jsonl` disk DoS.** 401 appends are now debounced per `(type, remote)` on a 60-second window; a 5800 req/s flood that previously burned ~65 GB/day now grows at most by one line per source per minute.
 - **rt008 — Non-atomic `writeJson` could corrupt `~/.claude/settings.json`.** Now uses tmp+rename for any JSON farmer writes.
 
+A separate end-to-end workflow red team (framed around user flows instead of attack surfaces, per a lesson from this sprint) caught 3 more issues in the feedback lifecycle and admin operations. All fixed before publish:
+
+- **rt-fb1 — Feedback cross-session leak.** `POST /api/feedback` allowed an optional/null `session_id`, and `GET /api/feedback/poll` returned null-targeted items to every poller. `_consumePendingFeedback(undefined)` (fired when Stop-hook ran against a session that failed to resolve) returned ANY pending item from ANY session and piped it into the next session's `additionalContext`. Submit + poll + ack now REQUIRE a concrete `session_id`; the consume path default-denies on missing sessionId.
+- **rt-fb2 — Poll + ack were unauth.** `/api/feedback/poll` and `/api/feedback/ack` were loopback-only but unauthenticated; any same-UID process could read and silence feedback. Both now require a hook-token Bearer in enforced mode (same auth model as `/hooks/*`).
+- **rt-fb3 — `POST /api/feedback/read` marked every pending item delivered ignoring target session.** Endpoint removed — returns `410 Gone` with a migration pointer to `/api/feedback/ack` (which takes `{session_id, ids}`).
+- **rt-fb4 — Feedback outlived session_end.** Feedback queued for session A survived a session_end → session_start-with-same-id and re-attached to the new session. Now purged on `session_end` with `expire_reason: "session_ended"`.
+- **rt-fb5 — Admin token rotation wasn't persisted.** `POST /api/admin/rotate-token` rotated tokens in memory but never rewrote `.farmer-token`, so a server restart resurrected the pre-rotate token. Now atomic tmp+rename on every rotation.
+
 ### Fixed
 
 - **First-install silent 401 on every hook POST.** `lib/server.js` enforces `Authorization: Bearer <hook-token>` on `/hooks/*` when `.farmer-token` contains a `hook` field (introduced in the bs-19 security hardening). `lib/connect.js` wrote hook commands into `~/.claude/settings.json` with no `Authorization` header. `cat | curl -s ... 2>/dev/null || true` swallowed the 401, so every fresh install that landed in enforcement mode had a silently empty dashboard. Root cause: two sides of the same binary shipped asymmetric auth contracts; no end-to-end test covered the connect↔server seam.
