@@ -352,25 +352,38 @@ describe("red-team regressions (rt001-rt008)", () => {
     }
   });
 
-  it("rt004: /hooks/lifecycle compact refuses unregistered cwd", async () => {
+  it("rt004: /hooks/lifecycle compact refuses unregistered cwd (default install has empty registeredProjects)", async () => {
+    // Red-team re-verify caught that the first fix used _isRegisteredProject,
+    // which default-allows on empty registeredProjects. Default installs
+    // have []  and so the exfil hole remained open. This test plants a
+    // real compilation.json at an attacker-controlled path — the test
+    // passes ONLY if the server refuses to read it.
     const dataDir = mkDataDir();
+    const victimDir = mkDataDir();
     const port = allocPort();
-    writeFileSync(
-      join(dataDir, ".farmer-token"),
-      JSON.stringify({
-        admin: "a".repeat(32),
-        viewer: "v".repeat(32),
-        hook: "h".repeat(32),
-      }),
-      { mode: 0o600 },
-    );
-    const farmer = await startFarmer(port, dataDir);
     try {
+      writeFileSync(
+        join(dataDir, ".farmer-token"),
+        JSON.stringify({
+          admin: "a".repeat(32),
+          viewer: "v".repeat(32),
+          hook: "h".repeat(32),
+        }),
+        { mode: 0o600 },
+      );
+      // Plant a compilation.json in the victim dir. If the rt004 fix is
+      // working, the server must NOT return this content.
+      const SECRET_MARKER = "RT004-DO-NOT-LEAK-THIS-STRING";
+      writeFileSync(
+        join(victimDir, "compilation.json"),
+        JSON.stringify({ question: SECRET_MARKER, claims: [] }),
+      );
+      const farmer = await startFarmer(port, dataDir);
       const body = JSON.stringify({
         event: "session_new",
         source: "compact",
-        sessionId: "rt004-test",
-        cwd: "/etc",
+        sessionId: "rt004-reverify",
+        cwd: victimDir,
       });
       const resp = await new Promise((resolve, reject) => {
         const req = nodeHttpRequest(
@@ -401,15 +414,20 @@ describe("red-team regressions (rt001-rt008)", () => {
         req.write(body);
         req.end();
       });
+      await stopFarmer(farmer.child);
       assert.equal(resp.status, 200);
+      assert.ok(
+        !resp.body.includes(SECRET_MARKER),
+        "rt004 regression — /hooks/lifecycle leaked a file from an unregistered cwd on a default install",
+      );
       const parsed = JSON.parse(resp.body);
       assert.ok(
         !parsed.additionalContext,
-        "rt004 regression — /hooks/lifecycle returned file contents for an unregistered cwd",
+        "rt004: additionalContext must be empty for unregistered cwd",
       );
     } finally {
-      await stopFarmer(farmer.child);
       rmDataDir(dataDir);
+      rmDataDir(victimDir);
     }
   });
 });
