@@ -239,6 +239,55 @@ describe("connect<->server seam: hook POSTs authenticate correctly", () => {
 // ---------- Red-team regression guards (rt001-rt008) ----------
 
 describe("red-team regressions (rt001-rt008)", () => {
+  it("blindspot#1: hand-patched 1.1.4 hooks (with -H @file inserted) are recognized and migrated", async () => {
+    // Reproduces Aid's own local state: 1.1.4 shape + `-H @file` inserted
+    // before Content-Type. Must match LEGACY regex so auto-migration
+    // REPLACES (not appends) these on next `farmer connect`.
+    const dataDir = mkDataDir();
+    const port = allocPort();
+    try {
+      writeFileSync(
+        join(dataDir, ".farmer-config.json"),
+        JSON.stringify({ port }),
+      );
+      const settingsDir = join(dataDir, ".claude");
+      mkdirSync(settingsDir, { recursive: true });
+      const handPatchedHook = {
+        matcher: "",
+        hooks: [
+          {
+            type: "command",
+            command: `cat | curl -s -X POST http://127.0.0.1:${port}/hooks/permission -H @/tmp/hook-auth.header -H 'Content-Type: application/json' --data-binary @- 2>/dev/null || true`,
+            timeout: 120,
+          },
+        ],
+      };
+      writeFileSync(
+        join(settingsDir, "settings.json"),
+        JSON.stringify({ hooks: { PreToolUse: [handPatchedHook] } }, null, 2),
+      );
+      const farmer = await startFarmer(port, dataDir);
+      await connect({ global: false, cwd: dataDir, dataDir });
+      await stopFarmer(farmer.child);
+
+      const after = JSON.parse(
+        readFileSync(join(settingsDir, "settings.json"), "utf8"),
+      );
+      assert.equal(
+        after.hooks.PreToolUse.length,
+        1,
+        "hand-patched 1.1.4 hook must be REPLACED by 1.1.5 shape, not appended (blindspot#1)",
+      );
+      assert.match(
+        after.hooks.PreToolUse[0].hooks[0].command,
+        /# @farmer-managed$/,
+        "migrated hook should carry the 1.1.5 sentinel",
+      );
+    } finally {
+      rmDataDir(dataDir);
+    }
+  });
+
   it("rt002: buildHookCommand throws on path with shell-injection chars", () => {
     // Direct unit test: the function must refuse unsafe paths before any
     // command string is handed to a user-level shell.
