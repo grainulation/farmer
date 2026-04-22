@@ -2,17 +2,30 @@
 
 ## 1.1.5 — 2026-04-21
 
+### Security
+
+Pre-publish red-team pass caught 5 P0 and 3 P1 vulnerabilities in the first cut of 1.1.5 (commit c11f478). All are fixed before shipping to npm:
+
+- **rt001 — Symlink TOCTOU on `hook-auth.header.tmp` (cross-UID token theft).** The tmp file is now opened with `O_WRONLY|O_CREAT|O_EXCL` and a `randomBytes(8)` suffix, so a pre-staged symlink at the tmp path fails `EEXIST` instead of redirecting the token write.
+- **rt002 — Shell injection via `dataDir`.** `hookAuthPath` was interpolated unescaped into a double-quoted `-H "@${path}"` curl arg; a dataDir containing `"; <cmd>; #` broke out and executed on every `PreToolUse`. `connect` now charset-whitelists the path and refuses to emit a hook command if it contains any char outside `[A-Za-z0-9/._\-~+:@,%]`. CVE-grade silent RCE; tested.
+- **rt003 — Auto-migration clobbered 3rd-party `127.0.0.1` hooks.** The greedy prefix-match `cat | curl -s -X POST http://127.0.0.1:` matched plausible dev-loggers on other ports. Legacy detection now requires an exact-template regex matching the 1.1.4 shape verbatim (including the `--data-binary @- 2>/dev/null || true` tail), and 1.1.5+ detection requires the `# @farmer-managed` sentinel.
+- **rt004 — Arbitrary file read via `/hooks/lifecycle` compact-context.** `_buildCompactContext(lc.cwd)` read `compilation.json` from attacker-controlled `cwd` and broadcast the contents. The handler now gates compact-context re-injection behind `_isRegisteredProject(lc.cwd)` and logs `compact_context_refused` to the audit log for unregistered paths.
+- **rt005 — Loopback pid-spoof session binding.** `sourceFingerprint(addr, pid)` on 127.0.0.1 was client-controlled (all pids visible via `ps`), so per-session isolation was theater. The binding check now runs only for non-loopback requests. Documented in SECURITY.md: any authenticated loopback hook client can forge events attributed to any session_id; per-session tokens are a 1.2.0 roadmap item.
+- **rt006 — DNS-rebinding via reflected CORS + missing Host check.** The server now rejects requests with non-loopback `Host` headers (421 Misdirected Request) and pins `Access-Control-Allow-Origin` to loopback-only origins instead of reflecting arbitrary `Origin`.
+- **rt007 — `.farmer-broken-installs.jsonl` disk DoS.** 401 appends are now debounced per `(type, remote)` on a 60-second window; a 5800 req/s flood that previously burned ~65 GB/day now grows at most by one line per source per minute.
+- **rt008 — Non-atomic `writeJson` could corrupt `~/.claude/settings.json`.** Now uses tmp+rename for any JSON farmer writes.
+
 ### Fixed
 
 - **First-install silent 401 on every hook POST.** `lib/server.js` enforces `Authorization: Bearer <hook-token>` on `/hooks/*` when `.farmer-token` contains a `hook` field (introduced in the bs-19 security hardening). `lib/connect.js` wrote hook commands into `~/.claude/settings.json` with no `Authorization` header. `cat | curl -s ... 2>/dev/null || true` swallowed the 401, so every fresh install that landed in enforcement mode had a silently empty dashboard. Root cause: two sides of the same binary shipped asymmetric auth contracts; no end-to-end test covered the connect↔server seam.
-- Rewrote `lib/connect.js` to emit a hook command shape that authenticates correctly: `-H "@<absolute-path>/hook-auth.header"`. The server writes the header file (mode 0600) on startup and on token rotation via an atomic tmp+rename write. Token never appears on argv (`ps`-safe). Shell tilde (`~`) is never emitted — we use the server's real `dataDir` (via the new `GET /status`) because `@~/path` does not expand in bash/zsh/sh/dash. Stderr is no longer redirected to `/dev/null` and `|| true` is removed; curl's `--fail-with-body` now surfaces 401s to Claude Code's hook log.
+- Rewrote `lib/connect.js` to emit a hook command shape that authenticates correctly: `-H "@<absolute-path>/hook-auth.header"`. The server writes the header file (mode 0600) on startup and on token rotation via an atomic `O_EXCL` tmp+rename write. Token never appears on argv (`ps`-safe). Shell tilde (`~`) is never emitted — we use the server's real `dataDir` (via the new `GET /status`) because `@~/path` does not expand in bash/zsh/sh/dash. Stderr is no longer redirected to `/dev/null` and `|| true` is removed; curl's `--fail-with-body` now surfaces 401s to Claude Code's hook log.
 
 ### Added
 
 - `GET /status` — unauth, loopback-only JSON endpoint exposing hook counters, `hookAuthMode`, `dataDir`, and `hookAuthPath`. Used by `farmer connect` to discover the running server's real data dir (closing the connect-CWD vs start-CWD divergence) and by `farmer status` to render visible diagnostics.
-- `.farmer-broken-installs.jsonl` — appended on every `/hooks/*` 401. Lets `farmer status` warn users when their dashboard is silently empty.
-- Tamper-safe auto-migration — 1.1.4 curl commands (no Bearer) rewrite in place on next `farmer connect`. Detection uses our sentinel (`# @farmer-managed`) OR the exact 1.1.4 prefix; hand-edits are preserved.
-- `test/connect-server-seam.test.js` — end-to-end test exercising both opportunistic and enforced modes. Spawns farmer on an ephemeral port, calls `connect()` as a library, invokes the emitted curl via `sh -c`, asserts `hooks.accepted > 0` and `hooks.rejected401 === 0`. Also regression-guards the tilde-in-path bug.
+- `.farmer-broken-installs.jsonl` — appended on every `/hooks/*` 401 (debounced per source, see rt007). Lets `farmer status` warn users when their dashboard is silently empty.
+- Tamper-safe auto-migration — 1.1.4 curl commands (no Bearer) rewrite in place on next `farmer connect`. Detection uses our sentinel (`# @farmer-managed`) OR the exact 1.1.4 template regex; hand-edits and 3rd-party hooks are preserved.
+- `test/connect-server-seam.test.js` — end-to-end test exercising both opportunistic and enforced modes. Spawns farmer on an ephemeral port, calls `connect()` as a library, invokes the emitted curl via `sh -c`, asserts `hooks.accepted > 0` and `hooks.rejected401 === 0`. Also includes red-team regression guards for rt002 (shell-injection refusal), rt003 (3rd-party hook preservation), rt004 (lifecycle file-read gate), and rt006 (DNS-rebinding Host rejection).
 
 ### Changed
 

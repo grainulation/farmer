@@ -57,6 +57,44 @@ Out of scope:
 - Missing security headers on local-only HTTP servers that are
   intended for a single-user loopback workflow.
 
+## Hook authentication model (1.1.5+)
+
+The `/hooks/*` endpoints use an opportunistic Bearer auth scheme:
+
+- If `.farmer-token` (in the server's `dataDir`) contains a `hook` field
+  at startup, every `/hooks/*` POST MUST carry `Authorization: Bearer
+  <hookToken>` or receive `401 unauthorized`.
+- If the file has no `hook` field, farmer accepts unauthenticated loopback
+  POSTs (for pre-1.1 compat) and logs a one-time stderr warning.
+
+The hook token is written to `<dataDir>/hook-auth.header` (mode 0600) and
+referenced by Claude Code hook curls via `-H "@<path>"` so the token never
+appears on argv.
+
+### Known limitation — no per-session isolation on loopback (rt005)
+
+An authenticated hook client (any process that can read
+`<dataDir>/hook-auth.header` — i.e. the same UID on the host) can POST a
+hook with an arbitrary `session_id` and `pid`, and farmer will attribute
+the event to that session. The `sourceFingerprint(addr, pid)` check that
+previously "bound" a session to a pid is disabled on loopback in 1.1.5
+because loopback pids are client-controlled and visible via `ps`,
+making the check security theater.
+
+This means: on a multi-user host, a malicious same-UID process with the
+hook token can pollute your audit log and dashboard with forged events
+attributed to other sessions. Mitigations:
+
+- The hook token file is 0600 by default; set a strict umask and don't
+  share your host UID.
+- For stronger isolation between Claude Code sessions running as the same
+  UID, wait for 1.2.0: farmer will hand out a per-session token at hook
+  start, and hook POSTs will need to present the session-specific token
+  to be accepted for that session_id.
+
+Report fingerprint-spoof incidents via the process above so we can track
+the 1.2.0 migration priority.
+
 ## Credit
 
 We credit reporters in release notes and the advisory. Let us know if

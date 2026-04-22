@@ -23,11 +23,13 @@ import {
   readFileSync,
   writeFileSync,
   existsSync,
+  mkdirSync,
 } from "node:fs";
+import { request as nodeHttpRequest } from "node:http";
 import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
-import { connect } from "../lib/connect.js";
+import { connect, buildHookCommand } from "../lib/connect.js";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const FARMER_BIN = resolve(__dirname, "..", "bin", "farmer.js");
@@ -232,6 +234,184 @@ describe("connect<->server seam: hook POSTs authenticate correctly", () => {
       });
     });
   }
+});
+
+// ---------- Red-team regression guards (rt001-rt008) ----------
+
+describe("red-team regressions (rt001-rt008)", () => {
+  it("rt002: buildHookCommand throws on path with shell-injection chars", () => {
+    // Direct unit test: the function must refuse unsafe paths before any
+    // command string is handed to a user-level shell.
+    const attacks = [
+      '/tmp/"; rm -rf ~; #/hook-auth.header',
+      "/tmp/$(whoami)/hook-auth.header",
+      "/tmp/`id`/hook-auth.header",
+      "/tmp/a'b/hook-auth.header",
+      "/tmp/a\nb/hook-auth.header",
+    ];
+    for (const bad of attacks) {
+      assert.throws(
+        () => buildHookCommand("http://127.0.0.1:9090", "/hooks/activity", bad),
+        /unsafe characters|refusing/i,
+        `rt002 regression — buildHookCommand accepted hostile path: ${bad}`,
+      );
+    }
+    // Sanity: safe paths still work
+    const safe = buildHookCommand(
+      "http://127.0.0.1:9090",
+      "/hooks/activity",
+      "/Users/alice/.farmer/hook-auth.header",
+    );
+    assert.match(safe, /-H "@\/Users\/alice\/\.farmer\/hook-auth\.header"/);
+  });
+
+  it("rt003: plausible third-party 127.0.0.1 hook is NOT matched as farmer", async () => {
+    const dataDir = mkDataDir();
+    const port = allocPort();
+    try {
+      writeFileSync(
+        join(dataDir, ".farmer-config.json"),
+        JSON.stringify({ port }),
+      );
+      const settingsDir = join(dataDir, ".claude");
+      mkdirSync(settingsDir, { recursive: true });
+      const thirdPartyHook = {
+        matcher: "",
+        hooks: [
+          {
+            type: "command",
+            command:
+              "cat | curl -s -X POST http://127.0.0.1:7777/hooks/log " +
+              "-H 'X-Dev-Logger: yes' --data-binary @- # not-farmer",
+          },
+        ],
+      };
+      writeFileSync(
+        join(settingsDir, "settings.json"),
+        JSON.stringify({ hooks: { PostToolUse: [thirdPartyHook] } }, null, 2),
+      );
+
+      const farmer = await startFarmer(port, dataDir);
+      await connect({ global: false, cwd: dataDir, dataDir });
+      await stopFarmer(farmer.child);
+
+      const after = JSON.parse(
+        readFileSync(join(settingsDir, "settings.json"), "utf8"),
+      );
+      const stillPresent = after.hooks.PostToolUse.some(
+        (entry) =>
+          entry.hooks?.[0]?.command === thirdPartyHook.hooks[0].command,
+      );
+      assert.ok(
+        stillPresent,
+        "rt003 regression — farmer's auto-migration clobbered a third-party hook",
+      );
+    } finally {
+      rmDataDir(dataDir);
+    }
+  });
+
+  it("rt006: request with non-loopback Host header is rejected 421", async () => {
+    const dataDir = mkDataDir();
+    const port = allocPort();
+    const farmer = await startFarmer(port, dataDir);
+    try {
+      const resp = await new Promise((resolve, reject) => {
+        const req = nodeHttpRequest(
+          {
+            host: "127.0.0.1",
+            port,
+            path: "/status",
+            method: "GET",
+            headers: { Host: "evil.com" },
+            timeout: 3000,
+          },
+          (r) => {
+            const chunks = [];
+            r.on("data", (c) => chunks.push(c));
+            r.on("end", () =>
+              resolve({
+                status: r.statusCode,
+                body: Buffer.concat(chunks).toString("utf8"),
+              }),
+            );
+          },
+        );
+        req.on("error", reject);
+        req.end();
+      });
+      assert.equal(resp.status, 421, "rt006: DNS-rebinding host must 421");
+      assert.match(
+        resp.body,
+        /misdirected_host/i,
+        "rt006: response should identify as host mismatch",
+      );
+    } finally {
+      await stopFarmer(farmer.child);
+      rmDataDir(dataDir);
+    }
+  });
+
+  it("rt004: /hooks/lifecycle compact refuses unregistered cwd", async () => {
+    const dataDir = mkDataDir();
+    const port = allocPort();
+    writeFileSync(
+      join(dataDir, ".farmer-token"),
+      JSON.stringify({
+        admin: "a".repeat(32),
+        viewer: "v".repeat(32),
+        hook: "h".repeat(32),
+      }),
+      { mode: 0o600 },
+    );
+    const farmer = await startFarmer(port, dataDir);
+    try {
+      const body = JSON.stringify({
+        event: "session_new",
+        source: "compact",
+        sessionId: "rt004-test",
+        cwd: "/etc",
+      });
+      const resp = await new Promise((resolve, reject) => {
+        const req = nodeHttpRequest(
+          {
+            host: "127.0.0.1",
+            port,
+            path: "/hooks/lifecycle",
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Content-Length": Buffer.byteLength(body),
+              Authorization: "Bearer " + "h".repeat(32),
+            },
+            timeout: 3000,
+          },
+          (r) => {
+            const chunks = [];
+            r.on("data", (c) => chunks.push(c));
+            r.on("end", () =>
+              resolve({
+                status: r.statusCode,
+                body: Buffer.concat(chunks).toString("utf8"),
+              }),
+            );
+          },
+        );
+        req.on("error", reject);
+        req.write(body);
+        req.end();
+      });
+      assert.equal(resp.status, 200);
+      const parsed = JSON.parse(resp.body);
+      assert.ok(
+        !parsed.additionalContext,
+        "rt004 regression — /hooks/lifecycle returned file contents for an unregistered cwd",
+      );
+    } finally {
+      await stopFarmer(farmer.child);
+      rmDataDir(dataDir);
+    }
+  });
 });
 
 // ---------- Test 2: silent-401 class is surfaced ----------
